@@ -5,6 +5,14 @@ const path = require('node:path');
 const port = Number(process.env.PORT || 8080);
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid PORT');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'));
+const iconFiles = new Map([
+  ['/favicon.svg', {type: 'image/svg+xml', body: fs.readFileSync(path.join(__dirname, 'favicon.svg'))}]
+,  ['/favicon.ico', {type: 'image/x-icon', body: fs.readFileSync(path.join(__dirname, 'favicon.ico'))}]
+,  ['/favicon-16.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'favicon-16.png'))}]
+,  ['/favicon-32.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'favicon-32.png'))}]
+,  ['/apple-touch-icon.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'apple-touch-icon.png'))}]
+,  ['/favicon-512.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'favicon-512.png'))}]
+]);
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (!['GET', 'HEAD'].includes(req.method)) {
@@ -14,7 +22,11 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     return res.end(req.method === 'HEAD' ? undefined : '{"status":"ok"}');
   }
-  if (pathname === '/favicon.ico') { res.writeHead(204); return res.end(); }
+  const icon = iconFiles.get(pathname);
+  if (icon) {
+    res.writeHead(200, { 'Content-Type': icon.type, 'Cache-Control': 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
+    return res.end(req.method === 'HEAD' ? undefined : icon.body);
+  }
   if (pathname !== '/' && pathname !== '/index.html') {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end(req.method === 'HEAD' ? undefined : 'Not found');
