@@ -24,7 +24,7 @@ const server = http.createServer((req, res) => {
   }
   const icon = iconFiles.get(pathname);
   if (icon) {
-    res.writeHead(200, { 'Content-Type': icon.type, 'Cache-Control': 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
+    res.writeHead(200, { 'Content-Type': icon.type, 'Cache-Control': 'no-cache, max-age=0, must-revalidate', 'X-Content-Type-Options': 'nosniff' });
     return res.end(req.method === 'HEAD' ? undefined : icon.body);
   }
   if (pathname !== '/' && pathname !== '/index.html') {
@@ -33,7 +33,7 @@ const server = http.createServer((req, res) => {
   }
   res.writeHead(200, {
     'Content-Type': 'text/html; charset=utf-8',
-    'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+    'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
     'Cache-Control': 'no-cache',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer'
