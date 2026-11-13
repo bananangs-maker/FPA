@@ -1,3 +1,4 @@
-Replace index.html and server.cjs in the main branch root, then redeploy.
-This patch assumes the favicon files from FPA 1.6.0 are already deployed.
-Close the browser tab and open the website again after deployment.
+Replace all four files in the main branch root and redeploy.
+After deployment, open https://fpa-studio.onrender.com/index.html in a regular Safari tab.
+Existing browser input data is preserved.
+Safari tab rendering requires confirmation on the user device.

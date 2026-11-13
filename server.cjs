@@ -6,6 +6,7 @@ const port = Number(process.env.PORT || 8080);
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid PORT');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'));
 const iconFiles = new Map([
+  ['/favicon-safari-162.ico', {type: 'image/x-icon', body: fs.readFileSync(path.join(__dirname, 'favicon-safari-162.ico'))}],
   ['/favicon.svg', {type: 'image/svg+xml', body: fs.readFileSync(path.join(__dirname, 'favicon.svg'))}]
 ,  ['/favicon.ico', {type: 'image/x-icon', body: fs.readFileSync(path.join(__dirname, 'favicon.ico'))}]
 ,  ['/favicon-16.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'favicon-16.png'))}]
