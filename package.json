@@ -1,0 +1,13 @@
+{
+  "name": "fpa",
+  "version": "1.5.0",
+  "private": true,
+  "description": "FPA · 제조업 손익 시뮬레이터",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node verify.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
