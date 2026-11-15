@@ -1,4 +1,8 @@
-Replace all four files in the main branch root and redeploy.
-After deployment, open https://fpa-studio.onrender.com/index.html in a regular Safari tab.
-Existing browser input data is preserved.
-Safari tab rendering requires confirmation on the user device.
+FPA 1.8.0
+
+See README.md for usage and ACCOUNTING_SCOPE.md for accounting coverage.
+GitHub main is connected to Render auto-deploy. Build check: npm test. Start: npm start.
+All source modules and icon assets must remain in the repository root structure.
+Existing browser input data uses the same local storage key and is preserved.
+The current tab icon is favicon-v180.ico, with a matching root favicon.ico fallback.
+Safari device-specific tab rendering cannot be verified from HTTP icon responses alone.
