@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const root=__dirname,read=p=>fs.readFileSync(path.join(root,p),'utf8');
+let html=read('src/core.html');
+const knowledge=read('src/knowledge.tsv').trim().split(/\r?\n/).map(line=>{const [title,aliases,body,formula,view,group]=line.split('|');if(!group)throw Error('Invalid knowledge record: '+title);return {title,aliases:aliases.split(','),body,formula,view,group};});
+const js=read('src/assistant.js').replace('__KNOWLEDGE_JSON__',JSON.stringify(knowledge).replace(/</g,'\\u003c'));
+html=html.replace('content="1.6.2"','content="1.7.0"').replace("connect-src 'none'","connect-src 'self'");
+html=html.replace('</style>',read('src/assistant.css')+'\n</style>');
+html=html.replace('<span class="save-status"','<button id="assistant-open" class="ghost assistant-open" onclick="openAssistant()" aria-label="시나리오 수정과 도움말">도우미</button><span class="save-status"');
+html=html.replace('</header><div class="workspace">','</header><div class="market-ticker" id="market-ticker" role="region" aria-label="환율과 유가"><button onclick="openMarket()">환율·유가 불러오기</button></div><div class="workspace">');
+html=html.replace('<script>','<section id="assistant-panel" class="assistant-panel" aria-label="시나리오 수정 및 질문 도우미" hidden></section><script>');
+html=html.replace("render();if(!saveBlocked)",()=>js+"\nrender();initAssistant();if(!saveBlocked)");
+fs.writeFileSync(path.join(root,'index.html'),html);
+console.log('Built FPA 1.7.0 · '+knowledge.length+' local explanations');

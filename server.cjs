@@ -2,7 +2,9 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const port = Number(process.env.PORT || 8080);
+const getMarket = require('./market.cjs').createMarketService();
+const cliPort = process.argv.indexOf('--port');
+const port = Number(process.env.PORT || (cliPort >= 0 ? process.argv[cliPort + 1] : 8080));
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid PORT');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'));
 const iconFiles = new Map([
@@ -14,7 +16,7 @@ const iconFiles = new Map([
 ,  ['/apple-touch-icon.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'apple-touch-icon.png'))}]
 ,  ['/favicon-512.png', {type: 'image/png', body: fs.readFileSync(path.join(__dirname, 'favicon-512.png'))}]
 ]);
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (!['GET', 'HEAD'].includes(req.method)) {
     res.writeHead(405, { Allow: 'GET, HEAD' }); return res.end();
@@ -22,6 +24,12 @@ const server = http.createServer((req, res) => {
   if (pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     return res.end(req.method === 'HEAD' ? undefined : '{"status":"ok"}');
+  }
+  if (pathname === '/api/market') {
+    if (new URL(req.url, 'http://localhost').search || req.headers['content-length'] || req.headers['transfer-encoding']) { res.writeHead(400); return res.end('No input accepted'); }
+    if (req.method === 'HEAD') { res.writeHead(200, {'Content-Type':'application/json; charset=utf-8'}); return res.end(); }
+    try { const data = await getMarket(); res.writeHead(200, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}); return res.end(JSON.stringify(data)); }
+    catch { res.writeHead(503, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}); return res.end(JSON.stringify({error:'시세를 조회할 수 없습니다.'})); }
   }
   const icon = iconFiles.get(pathname);
   if (icon) {
@@ -34,7 +42,7 @@ const server = http.createServer((req, res) => {
   }
   res.writeHead(200, {
     'Content-Type': 'text/html; charset=utf-8',
-    'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+    'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'",
     'Cache-Control': 'no-cache',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer'
