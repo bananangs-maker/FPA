@@ -1,0 +1,27 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const elements={},attrs={};const root={style:{setProperty(){}},setAttribute(k,v){attrs[k]=v},getAttribute(k){return attrs[k]}};
+const element=()=>({textContent:'',innerHTML:'',style:{},className:'',addEventListener(){},setAttribute(){}});
+const document={documentElement:root,addEventListener(){},getElementById(id){return elements[id]||(elements[id]=element())}};
+const stored={};const context={document,console,crypto:require('node:crypto').webcrypto,localStorage:{getItem(k){return stored[k]||null},setItem(k,v){stored[k]=v}},setTimeout(){},clearTimeout(){},confirm(){return true}};vm.createContext(context);const html=fs.readFileSync(__dirname+'/index.html','utf8');vm.runInContext(html.split('<script>')[1].split('</script>')[0],context);let passed=0;
+function run(code){return vm.runInContext(code,context)}function test(name,fn){fn();console.log('PASS '+name);passed++}
+const answer=q=>run('accountingDecision('+JSON.stringify(q)+')');
+test('sales employee pay answers the user question as selling SG&A, not manufacturing labor',()=>{const a=answer('영업자 임금은 판관비인가요?');assert.match(a.conclusion,/판관비/);assert.equal(a.view,'sgFixed');assert.match(a.check,/수수료/)});
+test('opposite yes/no wording never produces an incorrect yes',()=>{const a=answer('영업사원 월급은 매출원가죠?');assert.match(a.conclusion,/판관비/);assert.doesNotMatch(a.conclusion,/^네/)});
+test('production worker pay follows inventory and sold production',()=>{const a=answer('생산직 급여는 판관비인가요?');assert.match(a.conclusion,/직접노무비/);assert.match(a.reason,/재고/)});
+test('factory manager pay is indirect manufacturing cost',()=>assert.match(answer('공장장 임금은 어떤 계정인가요?').conclusion,/제조간접비/));
+test('head office accounting staff pay is SG&A',()=>assert.match(answer('회계팀 급여는 어디로 처리해요?').conclusion,/판관비/));
+test('multi-role pay is not forced into one cost category',()=>assert.match(answer('생산직과 영업직을 겸하는 직원 급여').conclusion,/한 계정으로 단정하기 어렵/));
+test('sales commission distinguishes incremental contract acquisition costs',()=>{const a=answer('영업사원 수수료는 판관비인가요?');assert.equal(a.ref,'contract');assert.match(a.conclusion,/자산/)});
+test('fixed versus variable is answered independently of sales or production function',()=>{const a=answer('영업직 월급은 무조건 변동비인가요?');assert.match(a.conclusion,/지급 구조/);assert.match(a.reason,/서로 다른/)});
+test('research pay and construction pay use separate capitalization rules',()=>{assert.equal(answer('연구원 인건비를 자산으로 처리하나요?').ref,'research');assert.equal(answer('자가건설 인건비는 어디로 처리하나요?').ref,'asset')});
+test('inbound freight differs from outbound customer delivery',()=>{assert.match(answer('원재료 매입 운반비는 판관비인가요?').conclusion,/취득원가/);assert.match(answer('고객 배송 운반비는 제조원가인가요?').conclusion,/판매 관련/)});
+test('unspecified freight asks for purpose, without inventing treatment',()=>assert.match(answer('운반비는 어떤 계정인가요?').conclusion,/정할 수 없습니다/));
+test('depreciation and repairs have purpose-specific decision criteria',()=>{assert.match(answer('감가상각비는 제조원가인가요 판관비인가요?').conclusion,/생산 설비/);assert.match(answer('수선비는 자산인가요 비용인가요?').conclusion,/자산화 검토/)});
+test('unknown tax outcome does not fabricate rates or blanket deductibility',()=>{const a=answer('영업직 급여는 세무상 전액 손금인가요?');assert.match(a.check,/확정하지 않습니다/)});
+test('financial versus managerial framing is explicit',()=>assert.match(answer('이건 관리회계인가요 재무회계인가요?').conclusion,/외부 보고/));
+test('knowledge covers CVP decisions, standard variances, revenue, leases and provisions',()=>{assert.ok(run('FPA_KNOWLEDGE.length')>=260);for(const q of ['자가제조와 외주','정상조업도','계약자산과 매출채권','충당부채와 우발부채','리스 회계','표준 재료수량 차이'])assert.equal(run('searchKnowledge('+JSON.stringify(q)+')[0].entry.title'),q)});
+test('theme modes respect system preference with explicit user override',()=>{assert.equal(run("themeIsDark('system',true)"),true);assert.equal(run("themeIsDark('light',true)"),false);assert.equal(run("themeIsDark('dark',false)"),true)});
+test('theme toggle persists separately without changing financial state',()=>{const before=run('JSON.stringify(state)');run("applyTheme('dark',true)");assert.equal(attrs['data-theme'],'dark');assert.equal(stored['fpa-studio-v3-theme'],'dark');run('toggleTheme()');assert.equal(attrs['data-theme'],'light');assert.equal(run('JSON.stringify(state)'),before)});
+test('icons use one primary named PNG plus separate touch and pinned tab assets',()=>{const links=html.match(/<link\b[^>]*rel="icon"[^>]*>/g)||[];assert.equal(links.length,1);assert.match(links[0],/fpa-icon-172.png/);assert.match(html,/rel="mask-icon"[^>]*safari-pinned-172.svg/);assert.match(html,/content="1.7.2"/);assert.ok(fs.existsSync(__dirname+'/fpa-touch-172.png'));assert.ok(fs.existsSync(__dirname+'/favicon.ico'))});
+console.log('Verified '+passed+' accounting, theme and icon checks.');

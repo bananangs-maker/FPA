@@ -1,0 +1,62 @@
+.theme-toggle{width:36px;height:36px;padding:8px;border:0;background:transparent;color:var(--muted)}.theme-toggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6}.theme-choices{display:flex;gap:4px;padding:7px 8px}.theme-choices button{flex:1;font-size:11px!important;justify-content:center!important;padding:8px!important}.theme-choices button[aria-pressed=true]{color:var(--blue);background:var(--focus)}
+html[data-theme=dark]{color-scheme:dark;--bg:#12161c;--ink:#e9edf5;--muted:#a3adbd;--line:#303846;--soft:#232b37;--focus:#263652;--blue:#8caaff;--navy:#8caaff;--green:#74c4ad;--red:#ff9399}
+html[data-theme=dark] body{background:#12161c;color:var(--ink)}
+html[data-theme=dark] aside{background:#171c24;border-color:var(--line)}
+html[data-theme=dark] button,html[data-theme=dark] select,html[data-theme=dark] input,html[data-theme=dark] textarea{background:#202733;color:#e9edf5;border-color:#3a4557}
+html[data-theme=dark] button:hover{background:#2b3544;border-color:#52627b}
+html[data-theme=dark] .ghost,html[data-theme=dark] .brand,html[data-theme=dark] .theme-toggle{background:transparent}
+html[data-theme=dark] button.primary{background:#2457ed;border-color:#2457ed;color:#fff}
+html[data-theme=dark] button.primary:hover{background:#3769ff;border-color:#3769ff}
+html[data-theme=dark] .topbar,html[data-theme=dark] .cards,html[data-theme=dark] .panel,html[data-theme=dark] dialog,html[data-theme=dark] .menu-popover,html[data-theme=dark] .assistant-panel,html[data-theme=dark] .assistant-compose{background:#191f29;border-color:var(--line);color:var(--ink)}
+html[data-theme=dark] .case-switch{color:var(--ink)}
+html[data-theme=dark] .nav button{color:#aeb8c9;background:transparent}
+html[data-theme=dark] .nav button:hover{background:#232e40;color:#fff}
+html[data-theme=dark] .nav button.active{background:#263653;color:#a9bfff}
+html[data-theme=dark] .nav button.active .icon{color:#a9bfff}
+html[data-theme=dark] .topbar .ghost,html[data-theme=dark] .aside-bottom .ghost,html[data-theme=dark] .card-label,html[data-theme=dark] .card-note,html[data-theme=dark] .save-status,html[data-theme=dark] .hint{color:#a4afc1}
+html[data-theme=dark] .section-tabs button{background:transparent;color:#a4afc1}
+html[data-theme=dark] .section-tabs button[aria-selected=true]{color:#edf2ff;border-bottom-color:#a9bfff}
+html[data-theme=dark] th,html[data-theme=dark] th:first-child{background:#242d3b;color:#b8c3d7;border-color:#303846}
+html[data-theme=dark] td,html[data-theme=dark] td:first-child{background:#191f29;color:#e2e8f2;border-color:#2b3442}
+html[data-theme=dark] tbody tr:hover td,html[data-theme=dark] tbody tr:hover td:first-child{background:#253044}
+html[data-theme=dark] .subtotal td,html[data-theme=dark] .subtotal td:first-child,html[data-theme=dark] .total-col{background:#252e3d;color:#e9edf5}
+html[data-theme=dark] .emphasis td,html[data-theme=dark] .emphasis td:first-child{background:#233859;color:#a9c1ff}
+html[data-theme=dark] .numeric-input,html[data-theme=dark] .text-input{background:#242f41!important;color:#edf2ff!important;border-color:transparent!important}
+html[data-theme=dark] .numeric-input:hover,html[data-theme=dark] .text-input:hover,html[data-theme=dark] .data-grid select{background:#2c3a50!important;color:#edf2ff!important}
+html[data-theme=dark] .numeric-input:focus,html[data-theme=dark] .text-input:focus{background:#182239!important;border-color:#85a9ff!important}
+html[data-theme=dark] input::placeholder,html[data-theme=dark] textarea::placeholder{color:#98a7bf}
+html[data-theme=dark] .note,html[data-theme=dark] .help-grid section,html[data-theme=dark] .advanced-section,html[data-theme=dark] .empty-start{background:#1d2633;border-color:#344057;color:#b9c5d9}
+html[data-theme=dark] .note.warning{background:#382e1d;border-color:#655133;color:#ead1a0}
+html[data-theme=dark] .tabs{background:#111823}
+html[data-theme=dark] .tabs button{background:transparent;color:#aebbd0}
+html[data-theme=dark] .tabs button.active{background:#2a3951;color:#fff}
+html[data-theme=dark] .badge{background:#2b3b58;color:#b4c9fa}
+html[data-theme=dark] .badge.warn{background:#453720;color:#f3d497}
+html[data-theme=dark] .filter-side select,html[data-theme=dark] .filter-side .mini-button{background:#232d3c;color:#d1d9e7}
+html[data-theme=dark] .rowkey,html[data-theme=dark] label.field,html[data-theme=dark] .help-prose,html[data-theme=dark] .help-grid p,html[data-theme=dark] .guide-intro{color:#b7c4d8}
+html[data-theme=dark] .bar{background:#4a5870}
+html[data-theme=dark] .bar.dark,html[data-theme=dark] .bridge-fill.strong{background:#779eff}
+html[data-theme=dark] .bridge-track{background:#253042}
+html[data-theme=dark] .bridge-fill{background:#56647c}
+html[data-theme=dark] .market-ticker,html[data-theme=dark] .ticker-label,html[data-theme=dark] .ticker-details{background:#171e28;border-color:#303846;color:#dce6f7}
+html[data-theme=dark] .ticker-item{background:transparent;color:#dce6f7}
+html[data-theme=dark] .ticker-item time,html[data-theme=dark] .ticker-item small,html[data-theme=dark] .ticker-label span{color:#a9b5c8}
+html[data-theme=dark] .ticker-item .up{color:#ff9399}html[data-theme=dark] .ticker-item .down{color:#9db7ff}
+html[data-theme=dark] .chat-message{background:#242e3d;color:#e2e9f6}
+html[data-theme=dark] .chat-message.user{background:#2457ed;color:#fff}
+html[data-theme=dark] .chat-formula,html[data-theme=dark] .chat-table,html[data-theme=dark] .market-list article{background:#192230;border-color:#3b4960;color:#e2e9f6}
+html[data-theme=dark] .chat-preview{background:#1e2b43;border-color:#4b6496;color:#e6eeff}
+html[data-theme=dark] .chat-links a,html[data-theme=dark] .chat-links span,html[data-theme=dark] .assistant-welcome>p,html[data-theme=dark] .market-heading,html[data-theme=dark] .market-apply>p{color:#afc1de}
+html[data-theme=dark] a{color:#a9c1ff}
+html[data-theme=dark] .assistant-tabs button{background:#222d3d;color:#acbcd6}
+html[data-theme=dark] .assistant-tabs button[aria-pressed=true]{background:#2e4268;color:#d4e1ff}
+html[data-theme=dark] .assistant-open{background:#fff;border-color:#65738b;box-shadow:0 4px 24px #0006}
+html[data-theme=dark] .assistant-open:hover{background:#fff}
+html[data-theme=dark] .assistant-open[aria-expanded=true]{box-shadow:0 0 0 3px #36496c,0 4px 24px #0006}
+html[data-theme=dark] .adjustment-groups button{background:transparent;color:#b2c2dd}
+html[data-theme=dark] .adjustment-groups button.active{background:#2a3c60;color:#d8e5ff}
+html[data-theme=dark] .adjustment-table input,html[data-theme=dark] .adjustment-table select,html[data-theme=dark] .range-toolbar{background:#202d43;color:#edf2ff;border-color:#4e6386}
+html[data-theme=dark] .range-selected,html[data-theme=dark] td.range-selected{background:#304d7b!important}
+html[data-theme=dark] .month-options,html[data-theme=dark] .month-picker[open],html[data-theme=dark] .search-field,html[data-theme=dark] .search-list button:hover{background:#202c40;color:#edf2ff}
+html[data-theme=dark] .accounting-conclusion{color:#c7d9ff}
+@media print{html[data-theme=dark]{--bg:#fff;--ink:#111;--muted:#555;--line:#ddd;--blue:#2457ed}html[data-theme=dark] body,html[data-theme=dark] .panel,html[data-theme=dark] td,html[data-theme=dark] td:first-child,html[data-theme=dark] th,html[data-theme=dark] .cards,html[data-theme=dark] .card{background:#fff!important;color:#111!important}.theme-toggle{display:none!important}}

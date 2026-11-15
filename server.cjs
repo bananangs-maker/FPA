@@ -8,6 +8,9 @@ const port = Number(process.env.PORT || (cliPort >= 0 ? process.argv[cliPort + 1
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid PORT');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'));
 const iconFiles = new Map([
+  ['/fpa-icon-172.png', {type:'image/png',body:fs.readFileSync(path.join(__dirname,'fpa-icon-172.png'))}],
+  ['/fpa-touch-172.png', {type:'image/png',body:fs.readFileSync(path.join(__dirname,'fpa-touch-172.png'))}],
+  ['/safari-pinned-172.svg', {type:'image/svg+xml',body:fs.readFileSync(path.join(__dirname,'safari-pinned-172.svg'))}],
   ['/favicon-safari-162.ico', {type: 'image/x-icon', body: fs.readFileSync(path.join(__dirname, 'favicon-safari-162.ico'))}],
   ['/favicon.svg', {type: 'image/svg+xml', body: fs.readFileSync(path.join(__dirname, 'favicon.svg'))}]
 ,  ['/favicon.ico', {type: 'image/x-icon', body: fs.readFileSync(path.join(__dirname, 'favicon.ico'))}]
@@ -44,6 +47,7 @@ const server = http.createServer(async (req, res) => {
     'Content-Type': 'text/html; charset=utf-8',
     'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'",
     'Cache-Control': 'no-cache',
+    'Link': '</fpa-icon-172.png>; rel="icon"; type="image/png"',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer'
   });
