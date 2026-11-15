@@ -8,6 +8,7 @@ const port = Number(process.env.PORT || (cliPort >= 0 ? process.argv[cliPort + 1
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid PORT');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'));
 const iconFiles = new Map([
+  ['/favicon-v181.ico', {type:'image/x-icon',body:fs.readFileSync(path.join(__dirname,'favicon-v181.ico'))}],
   ['/favicon-v180.ico', {type:'image/x-icon',body:fs.readFileSync(path.join(__dirname,'favicon-v180.ico'))}],
   ['/fpa-icon-172.png', {type:'image/png',body:fs.readFileSync(path.join(__dirname,'fpa-icon-172.png'))}],
   ['/fpa-touch-172.png', {type:'image/png',body:fs.readFileSync(path.join(__dirname,'fpa-touch-172.png'))}],
@@ -48,7 +49,7 @@ const server = http.createServer(async (req, res) => {
     'Content-Type': 'text/html; charset=utf-8',
     'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'",
     'Cache-Control': 'no-cache',
-    'Link': '</favicon-v180.ico>; rel="icon"; type="image/x-icon"',
+    'Link': '</favicon-v181.ico>; rel="icon"; type="image/x-icon"',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer'
   });
