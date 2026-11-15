@@ -1,4 +1,4 @@
-FPA 1.8.1
+FPA 1.8.2
 
 See README.md for usage and ACCOUNTING_SCOPE.md for accounting coverage.
 GitHub main is connected to Render auto-deploy. Build check: npm test. Start: npm start.

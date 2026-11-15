@@ -1,6 +1,6 @@
 {
   "name": "fpa",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "private": true,
   "description": "FPA · 제조업 손익 시뮬레이터",
   "scripts": {
