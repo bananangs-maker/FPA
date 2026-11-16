@@ -8,3 +8,5 @@
 .assistant-panel,.table-focus .assistant-panel{top:auto;right:max(24px,env(safe-area-inset-right));bottom:calc(max(24px,env(safe-area-inset-bottom)) + 74px);height:min(700px,calc(100dvh - 124px));max-height:calc(100vh - 124px);}
 @media(max-width:700px){.assistant-open{right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:56px;height:56px;border-radius:18px;}.assistant-open svg{width:44px;height:44px;}.assistant-panel,.table-focus .assistant-panel{top:12px;right:8px;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 68px);height:auto;max-height:none;}}
 @media(prefers-reduced-motion:reduce){.assistant-open{transition:none;}.assistant-open:hover{transform:none;}}
+
+.qa-filters{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:12px}.qa-list button{display:flex;flex-direction:column;text-align:left;gap:4px;min-height:44px}.qa-list button span{font-size:12px;color:var(--muted)}.qa-pages{justify-content:space-between;margin-top:16px}.qa-pages button{min-width:76px;min-height:36px}#qa-results .knowledge-card{margin-top:16px}@media(max-width:480px){.qa-filters{grid-template-columns:1fr}}
