@@ -1,7 +1,7 @@
 .number-roll{display:inline-block;position:relative;white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:baseline}
 .number-roll-overlay{position:absolute;left:0;top:50%;transform:translateY(-50%);height:1em;display:inline-flex;line-height:1;pointer-events:none;user-select:none}
 .number-roll-reel{display:block;width:1ch;height:1em;overflow:hidden;text-align:center}
-.number-roll-reel::before{content:attr(data-strip);display:block;white-space:pre;line-height:1em;will-change:transform;animation:fpa-number-roll var(--roll-duration) cubic-bezier(.15,.55,.2,1) both}
+.number-roll-reel::before{content:attr(data-strip);display:block;white-space:pre;line-height:1em;will-change:transform;animation:fpa-number-roll var(--roll-duration) cubic-bezier(.19,1,.22,1) both}
 .number-roll-mark::before{content:attr(data-character)}
 .number-roll.is-rolling>.number-roll-source{opacity:0}
 @keyframes fpa-number-roll{from{transform:translateY(0)}to{transform:translateY(var(--roll-distance))}}

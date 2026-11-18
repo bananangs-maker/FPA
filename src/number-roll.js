@@ -1,4 +1,4 @@
-// Hover-only presentation. The original number remains the sole DOM text,
+// Odometer presentation: each place advances from zero to its final digit. The original number remains the sole DOM text,
 // so selection, screen readers and CSV exports retain the exact result.
 const numberRollFinishes=new Set();
 function clearNumberRolls(){for(const finish of [...numberRollFinishes])finish();}
@@ -6,14 +6,14 @@ function startNumberRoll(target){
   if(target.classList.contains('is-rolling')||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
   if(window.getSelection?.()?.toString())return;
   const value=target.querySelector('.number-roll-source')?.textContent;
-  if(!value)return;
+  if(!value||!/[1-9]/.test(value))return;
   const overlay=document.createElement('span');overlay.className='number-roll-overlay';overlay.setAttribute('aria-hidden','true');
   let digitIndex=0,longest=0;
   for(const character of value){
     const reel=document.createElement('span');
     if(/[0-9]/.test(character)){
-      const turns=20,duration=560+Math.min(digitIndex++*32,224),digit=Number(character);
-      reel.className='number-roll-reel';reel.dataset.strip=Array.from({length:turns+1},(_,i)=>String((digit+i)%10)).join('\n');
+      const place=digitIndex++,digit=Number(character),turns=digit+(place>0?10:0),duration=720+Math.min(place*55,280);
+      reel.className='number-roll-reel';reel.dataset.strip=Array.from({length:turns+1},(_,i)=>String(i%10)).join('\n');
       reel.style.setProperty('--roll-distance',`-${turns}em`);reel.style.setProperty('--roll-duration',duration+'ms');longest=Math.max(longest,duration);
     }else{reel.className='number-roll-mark';reel.dataset.character=character;}
     overlay.append(reel);

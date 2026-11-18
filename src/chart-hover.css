@@ -1,0 +1,23 @@
+.dashboard-panels .month-bar{position:relative;isolation:isolate;border-radius:7px;outline:none}
+.dashboard-panels .month-bar::before{content:"";position:absolute;inset:-3px -3px 17px;border-radius:7px;background:var(--focus);opacity:0;z-index:-1;transition:opacity .18s}
+.dashboard-panels .bar{transform-origin:center bottom;transition:transform .18s,opacity .18s,filter .18s}
+.dashboard-panels .month-bar.is-chart-active::before{opacity:1}
+.dashboard-panels .month-bar.is-chart-active .bar{transform:scaleX(1.16);filter:brightness(1.08)}
+.dashboard-panels .bar-chart:has(.is-chart-active) .month-bar:not(.is-chart-active) .bar{opacity:.4}
+.dashboard-panels .month-bar.is-chart-active small{color:var(--blue);font-weight:700}
+.dashboard-panels .chart-hit:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
+.dashboard-panels .bridge-row{border-radius:6px;transition:background .18s}
+.dashboard-panels .bridge-track{transition:transform .18s}
+.dashboard-panels .bridge-row.is-chart-active{background:var(--focus)}
+.dashboard-panels .bridge-row.is-chart-active .bridge-track{transform:scaleY(1.5)}
+.dashboard-panels .bridge-row.is-chart-active>span{color:var(--blue)}
+.chart-tooltip{position:fixed;z-index:90;pointer-events:none;width:min(250px,calc(100vw - 24px));padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);box-shadow:0 8px 28px #0002;font-size:12px;line-height:1.5}
+.chart-tooltip[hidden]{display:none}
+.chart-tooltip-title{font-size:13px;font-weight:700;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.chart-tooltip-row{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin-top:6px}
+.chart-tooltip-row span{color:var(--muted);white-space:nowrap}
+.chart-tooltip-row strong{font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
+.chart-tooltip-row.profit strong{color:var(--blue)}
+.chart-tooltip-row.negative strong{color:var(--red)}
+@media(prefers-reduced-motion:reduce){.dashboard-panels .bar,.dashboard-panels .month-bar::before,.dashboard-panels .bridge-track,.dashboard-panels .bridge-row{transition:none}}
+@media print{.chart-tooltip{display:none!important}.dashboard-panels .bar{opacity:1!important;transform:none!important}.dashboard-panels .month-bar::before{display:none}.dashboard-panels .bridge-track{transform:none!important}.dashboard-panels .bridge-row{background:transparent!important}}
