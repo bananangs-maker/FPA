@@ -6,7 +6,7 @@ let knowledge=read('src/knowledge.tsv').trim().split(/\r?\n/).map(line=>{const [
 for(const line of (read('src/lessons.tsv')+'\n'+read('src/journals.tsv')).trim().split(/\r?\n/).filter(Boolean)){const [title,alias,section,principle,example,check,formula,ref]=line.split('|');if(!ref)throw Error('Invalid lesson: '+title);const old=knowledge.find(x=>x.title===title);const entry={title,aliases:[...new Set([...(old?.aliases||[]),...alias.split(',')])],body:principle,formula:formula||old?.formula||'',view:old?.view||'help',group:section.startsWith('재무')?'회계':'원가',lesson:{section,principle,example,check,ref}};if(old)Object.assign(old,entry);else knowledge.push(entry);}
 knowledge=require('./qa-build.cjs')(knowledge,read);
 const js=(read('src/advanced-accounting.js')+'\n'+read('src/planning.js')+'\n'+read('src/accounting.js')+'\n'+read('src/theme.js')+'\n'+read('src/assistant.js')+'\n'+read('src/qa-search.js')).replace('__KNOWLEDGE_JSON__',JSON.stringify(knowledge).replace(/</g,'\\u003c'));
-html=html.replace('content="1.6.2"','content="1.10.1"').replace("connect-src 'none'","connect-src 'self'");
+html=html.replace('content="1.6.2"','content="1.10.2"').replace("connect-src 'none'","connect-src 'self'");
 html=html.replace('</style>',read('src/assistant.css')+'\n'+read('src/theme.css')+'\n'+read('src/planning.css')+'\n</style>');
 const launcher='<button id="assistant-open" class="assistant-open" type="button" onclick="toggleAssistant()" aria-label="FPA 도우미 열기" aria-controls="assistant-panel" aria-expanded="false" title="FPA 도우미"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M15 13H49V24H26V32H43V42H26V52H15Z" fill="#1d1f24"/><circle cx="48" cy="49" r="6.5" fill="#2457ed"/></svg></button>';
 const themeButton='<button id="theme-toggle" class="ghost theme-toggle" type="button" onclick="toggleTheme()" aria-label="다크 테마로 전환" aria-pressed="false" title="테마 변경"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 13A8.5 8.5 0 0 1 11 3.5a8.5 8.5 0 1 0 9.5 9.5Z"/></svg></button>';
@@ -17,4 +17,4 @@ html=html.replace('</header><div class="workspace">','</header><div class="marke
 html=html.replace('<script>','<section id="assistant-panel" class="assistant-panel" aria-label="시나리오 수정 및 질문 도우미" hidden></section><script>');
 html=html.replace("render();if(!saveBlocked)",()=>js+"\ninitTheme();render();initAssistant();if(inventoryRestoreNotice){toast(inventoryRestoreNotice);if(!saveBlocked)save();}if(!saveBlocked)");
 fs.writeFileSync(path.join(root,'index.html'),html);
-console.log('Built FPA 1.10.1 · '+knowledge.length+' local explanations');
+console.log('Built FPA 1.10.2 · '+knowledge.length+' local explanations');

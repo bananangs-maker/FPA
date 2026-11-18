@@ -10,3 +10,5 @@
 @media(prefers-reduced-motion:reduce){.assistant-open{transition:none;}.assistant-open:hover{transform:none;}}
 
 .qa-filters{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:12px}.qa-list button{display:flex;flex-direction:column;text-align:left;gap:4px;min-height:44px}.qa-list button span{font-size:12px;color:var(--muted)}.qa-pages{justify-content:space-between;margin-top:16px}.qa-pages button{min-width:76px;min-height:36px}#qa-results .knowledge-card{margin-top:16px}@media(max-width:480px){.qa-filters{grid-template-columns:1fr}}
+
+.market-list article>p.market-delayed,.ticker-item .market-delayed{color:#a46408;font-weight:600}html[data-theme=dark] .market-list article>p.market-delayed,html[data-theme=dark] .ticker-item .market-delayed{color:#f6bd62}
