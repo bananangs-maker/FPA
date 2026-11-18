@@ -3,6 +3,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const getMarket = require('./market.cjs').createMarketService();
+const getEconomy = require('./economy.cjs').createEconomyService();
 const cliPort = process.argv.indexOf('--port');
 const port = Number(process.env.PORT || (cliPort >= 0 ? process.argv[cliPort + 1] : 8080));
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid PORT');
@@ -30,10 +31,10 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     return res.end(req.method === 'HEAD' ? undefined : '{"status":"ok"}');
   }
-  if (pathname === '/api/market') {
+  if (pathname === '/api/market' || pathname === '/api/economy') {
     if (new URL(req.url, 'http://localhost').search || req.headers['content-length'] || req.headers['transfer-encoding']) { res.writeHead(400); return res.end('No input accepted'); }
     if (req.method === 'HEAD') { res.writeHead(200, {'Content-Type':'application/json; charset=utf-8'}); return res.end(); }
-    try { const data = await getMarket(); res.writeHead(200, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}); return res.end(JSON.stringify(data)); }
+    try { const data = await (pathname === '/api/economy' ? getEconomy() : getMarket()); res.writeHead(200, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}); return res.end(JSON.stringify(data)); }
     catch { res.writeHead(503, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}); return res.end(JSON.stringify({error:'시세를 조회할 수 없습니다.'})); }
   }
   const icon = iconFiles.get(pathname);
