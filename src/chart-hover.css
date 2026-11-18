@@ -35,7 +35,6 @@ html[data-theme=dark]{--chart-margin:#72ddc3}
 .dashboard-panels .combo-chart .month-bar small{height:20px;line-height:20px}
 .dashboard-panels .combo-chart .month-bar::before{inset:-3px 0 25px}
 .margin-layer{position:absolute;left:0;top:0;width:calc(100% - 50px);height:120px;overflow:visible;pointer-events:none;z-index:2}
-.margin-grid line{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5;opacity:.5}
 .margin-line{fill:none;stroke:var(--chart-margin);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
 .margin-points{position:absolute;left:0;top:0;width:calc(100% - 50px);height:120px;pointer-events:none;z-index:3}
 .margin-point{position:absolute;width:7px;height:7px;border:2px solid var(--chart-margin);border-radius:50%;background:var(--bg);transform:translate(-50%,-50%);transition:background .16s,width .16s,height .16s}
