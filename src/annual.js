@@ -53,6 +53,33 @@ function annualDifference(before,after,key,type){
   const value=after[key]-before[key],sign=value>0?'+':'';
   return sign+(type==='rate'?fmt(value*100,1)+'%p':display(value,type));
 }
+function annualBarGeometry(values){
+  const present=values.filter(v=>v!==null&&Number.isFinite(v)),min=Math.min(0,...present),rawMax=Math.max(0,...present),max=rawMax===min?1:rawMax,range=max-min;
+  return {zero:max/range*100,bars:values.map(v=>v===null?null:{top:v>=0?(max-v)/range*100:max/range*100,height:Math.abs(v)/range*100})};
+}
+function annualVisuals(years,cases,snapshots){
+  const ui=annualPreferences(),pair=({current:[0,1],next:[1,2],span:[0,2]})[ui.bridge],a=snapshots[pair[0]].data,b=snapshots[pair[1]].data;
+  const delta=(key,type)=>'<div class="annual-chart-delta">'+years[pair[0]]+'→'+years[pair[1]]+' <strong>'+annualDifference(a,b,key,type)+'</strong>'+(type==='money'?' '+unitLabel():'')+'</div>';
+  let html='<div class="annual-visual-note">항목별 독립 눈금</div><div class="annual-visuals">';
+  for(const [key,label] of [['revenue','매출액'],['op','영업이익'],['ebitda','EBITDA']]){
+    const values=snapshots.map(s=>s.data?.[key]??null),geometry=annualBarGeometry(values);
+    html+='<section class="annual-chart-card"><h2>'+label+'<small>'+unitLabel()+'</small></h2>'+delta(key,'money')+'<div class="annual-mini-columns">';
+    for(let i=0;i<3;i++){
+      const value=values[i],bar=geometry.bars[i],source=cases[i]?.name||'미선택';
+      html+='<div class="annual-mini-column chart-hit" tabindex="0" role="img" aria-label="'+esc(years[i]+'년 '+label+' '+(value===null?'자료 없음':fmt(value)+'원')+' · '+source)+'" data-chart-kind="annual" data-chart-label="'+years[i]+'년 · '+label+'" data-chart-value="'+(value??'')+'" data-chart-revenue="'+(snapshots[i].data?.revenue??'')+'" data-chart-case="'+esc(source)+'"><div class="annual-mini-amount '+(value<0?'negative':'')+'">'+annualValue(value,'money')+'</div><div class="annual-mini-bar-area"><span class="annual-mini-zero" style="top:'+geometry.zero+'%"></span>'+(bar?'<span class="annual-mini-bar year-'+i+(value<0?' is-negative':'')+'" style="top:'+bar.top+'%;height:'+bar.height+'%"></span>':'<span class="annual-mini-missing">—</span>')+'</div><div class="annual-mini-year">'+years[i]+'</div></div>';
+    }
+    html+='</div></section>';
+  }
+  const scale=chartMarginScale(snapshots.map(s=>s.data||{revenue:0,op:0})),y=v=>100-(v-scale.min)/(scale.max-scale.min)*100;
+  let path='',connected=false;
+  for(let i=0;i<3;i++){const value=scale.values[i];if(value===null){connected=false;continue;}path+=(connected?' L ':' M ')+(i*100+50)+' '+y(value).toFixed(3);connected=true;}
+  html+='<section class="annual-chart-card"><h2>영업이익률<small>%</small></h2>'+delta('opMargin','rate')+'<div class="annual-rate-chart"><svg viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true"><path d="'+path.trim()+'" vector-effect="non-scaling-stroke"/></svg>';
+  for(let i=0;i<3;i++){
+    const value=snapshots[i].data?.opMargin??null,source=cases[i]?.name||'미선택';
+    html+='<div class="annual-mini-column chart-hit" tabindex="0" role="img" aria-label="'+esc(years[i]+'년 영업이익률 '+annualValue(value,'rate')+' · '+source)+'" data-chart-kind="annual-rate" data-chart-label="'+years[i]+'년 · 영업이익률" data-chart-value="'+(snapshots[i].data?.op??'')+'" data-chart-revenue="'+(snapshots[i].data?.revenue??'')+'" data-chart-case="'+esc(source)+'"><div class="annual-mini-amount">'+annualValue(value,'rate')+'</div><div class="annual-mini-bar-area">'+(value===null?'<span class="annual-mini-missing">—</span>':'<span class="annual-rate-point" style="top:'+y(value*100)+'%"></span>')+'</div><div class="annual-mini-year">'+years[i]+'</div></div>';
+  }
+  return html+'</div></section></div>';
+}
 function annualCompareScreen(){
   const ui=annualPreferences(),years=[ui.year-1,ui.year,ui.year+1],cases=years.map(annualCaseForYear),snapshots=cases.map(c=>annualSnapshot(c,ui));
   const yearOptions=[...new Set([...state.cases.map(c=>c.year),ui.year])].sort((a,b)=>a-b);
@@ -65,6 +92,7 @@ function annualCompareScreen(){
   const sites=[...new Set(cases.filter(Boolean).flatMap(c=>c.sites.map(s=>s.name)))].sort(),products=new Map();
   for(const c of cases.filter(Boolean))for(const p of c.products)if(!ui.site||p.site===ui.site)products.set(p.id,p);
   html+='<div class="annual-scope"><label>공장<select aria-label="연도 비교 공장" onchange="selectAnnualScope(\'site\',this.value)">'+option('','전체 공장',!ui.site)+sites.map(s=>option(s,s,s===ui.site)).join('')+(!sites.includes(ui.site)&&ui.site?option(ui.site,ui.site+' · 미등록',true):'')+'</select></label><label>제품<select aria-label="연도 비교 제품" onchange="selectAnnualScope(\'product\',this.value)">'+option('','전체 제품',!ui.product)+[...products.values()].map(p=>option(p.id,p.name+' · '+p.site,p.id===ui.product)).join('')+(!products.has(ui.product)&&ui.product?option(ui.product,'선택 제품 · 미등록',true):'')+'</select></label><span>1~12월 합계 · 같은 제품 ID 기준</span></div>';
+  html+=annualVisuals(years,cases,snapshots);
   const header=years.map((year,i)=>year+'년'+(cases[i]?' · '+cases[i].kind:'')),metrics=[PNL[0],['production','생산수량','qty'],...PNL.slice(1),['avgPrice','kg당 평균 판가','unitCost']];
   const body='<div class="gridwrap"><table class="annual-table"><thead><tr>'+th('항목')+header.map((label,i)=>'<th>'+esc(label)+(cases[i]?'<small class="annual-source">'+esc(cases[i].scenario+' / '+cases[i].name)+'</small>':'')+'</th>').join('')+th(years[0]+'→'+years[1]+' 증감')+th(years[1]+'→'+years[2]+' 증감')+'</tr></thead><tbody>'+metrics.map(([key,label,type,cls])=>'<tr class="'+(cls||'')+'">'+td(esc(label))+snapshots.map(s=>td(annualValue(s.data?.[key],type))).join('')+td(annualDifference(snapshots[0].data,snapshots[1].data,key,type))+td(annualDifference(snapshots[1].data,snapshots[2].data,key,type))+'</tr>').join('')+'</tbody></table></div><div class="measure">금액: '+unitLabel()+' / 수량: kg / kg당 금액: 원/kg / 이익률 차이: %p</div>';
   html+=panel('연도별 손익',body,'<button class="mini-button" onclick="exportVisible()">CSV 내보내기</button>');
@@ -79,6 +107,6 @@ function annualCompareScreen(){
     if(before.months<12||after.months<12)explanation+='<p class="annual-warning">입력월이 12개월 미만인 CASE가 포함되어 있습니다. 현재 입력된 금액만 비교하며 연간으로 환산하지 않습니다.</p>';
   }
   html+=panel('영업이익 증감 구성',explanation,choices);
-  html+='<div class="note">자료월은 수량·단가·비용 등 입력값이 하나라도 있는 월이며, 월 마감 완료를 뜻하지 않습니다. 같은 연도의 여러 CASE를 합산하지 않습니다. CASE 선택·비교는 입력값과 배부 기준을 바꾸지 않습니다. 공장·제품 필터는 전체 CASE의 배부 계산이 끝난 뒤 적용합니다. 공장명 또는 제품 ID가 일치하지 않는 연도와 입력 전 CASE는 0 대신 —로 표시합니다. 제품 ID가 다른 연도는 전체 제품 기준으로 비교하거나 기준정보를 맞추세요. 비율은 연간 합계로 다시 계산하며, 분모가 0이면 —로 표시합니다. 증감 구성은 회계 항목별 대사이며 가격·물량·환율별 원인 분해를 의미하지 않습니다.</div>';
+  html+='<div class="note">그래프는 항목별 독립 눈금이며, 금액 비교는 같은 항목의 연도 간 막대를 기준으로 합니다. 자료월은 수량·단가·비용 등 입력값이 하나라도 있는 월이며, 월 마감 완료를 뜻하지 않습니다. 같은 연도의 여러 CASE를 합산하지 않습니다. CASE 선택·비교는 입력값과 배부 기준을 바꾸지 않습니다. 공장·제품 필터는 전체 CASE의 배부 계산이 끝난 뒤 적용합니다. 공장명 또는 제품 ID가 일치하지 않는 연도와 입력 전 CASE는 0 대신 —로 표시합니다. 제품 ID가 다른 연도는 전체 제품 기준으로 비교하거나 기준정보를 맞추세요. 비율은 연간 합계로 다시 계산하며, 분모가 0이면 —로 표시합니다. 증감 구성은 회계 항목별 대사이며 가격·물량·환율별 원인 분해를 의미하지 않습니다.</div>';
   return html;
 }

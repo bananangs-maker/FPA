@@ -37,7 +37,12 @@ function showChartTooltip(target){
   if(!chartTooltip){chartTooltip=document.createElement('div');chartTooltip.className='chart-tooltip';chartTooltip.id='chart-tooltip';chartTooltip.setAttribute('role','tooltip');document.body.append(chartTooltip);}
   const data=target.dataset,revenue=Number(data.chartRevenue),row=(label,value,kind='')=>'<div class="chart-tooltip-row '+kind+'"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>';
   let content='<div class="chart-tooltip-title">'+esc(data.chartLabel)+'</div>';
-  if(data.chartKind==='month'){
+  if(data.chartCase)content+='<div class="chart-tooltip-case">'+esc(data.chartCase)+'</div>';
+  if(data.chartKind.startsWith('annual')&&data.chartValue===''){
+    content+=row('자료','없음');
+  }else if(data.chartKind==='annual-rate'){
+    content+=row('영업이익률',revenue?percent(Number(data.chartValue)/revenue):'—','profit')+row('매출액',fmt(revenue)+'원')+row('영업이익',fmt(Number(data.chartValue))+'원');
+  }else if(data.chartKind==='month'){
     const profit=Number(data.chartProfit);
     content+=row('매출액',fmt(revenue)+'원','revenue')+row('영업이익',fmt(profit)+'원',profit<0?'negative':'profit')+row('영업이익률',revenue?percent(profit/revenue):'—');
   }else{

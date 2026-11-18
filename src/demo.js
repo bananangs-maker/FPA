@@ -9,6 +9,18 @@ try{
   if(demoMode)workspaceEmbedded=embeddedIsDemo?workspaceEmbedded:demoTemplateText;
 }catch{/* The normal loader preserves unreadable storage and blocks autosave. */}
 function workspaceStorageKey(){return demoMode?DEMO_STORAGE_KEY:KEY;}
+function upgradeDemoYears(){
+  if(!demoMode||saveBlocked||state.demoAnnualVersion>=1||!state.cases.some(c=>c.isDemo&&c.demoSetId==='chemical-v1'))return false;
+  try{
+    const template=JSON.parse(demoTemplateText),next=clone(state),additions=template.cases.filter(c=>c.demoAnnualRelease===1&&!next.cases.some(x=>x.demoSetId===c.demoSetId&&x.demoTemplateId===c.demoTemplateId));
+    if(next.cases.length+additions.length>100)return false;
+    for(const item of additions){const c=clone(item);if(next.cases.some(x=>x.id===c.id))c.id=uid();next.cases.push(c);}
+    next.demoAnnualVersion=1;
+    if(!validateState(next))return false;
+    // One atomic write: older demo edits and the real workspace remain intact.
+    localStorage.setItem(DEMO_STORAGE_KEY,JSON.stringify(next));state=next;return true;
+  }catch{return false;}
+}
 function paintWorkspaceMode(){
   const button=document.getElementById('demo-toggle'),label=document.getElementById('demo-mode-label');
   if(button){button.setAttribute?.('aria-checked',String(demoMode));button.title=demoMode?'가상 데이터 · 끄면 기존 작업 자료로 돌아갑니다.':'켜면 실제 기업과 무관한 가상 데이터를 별도 공간에서 엽니다.';}
