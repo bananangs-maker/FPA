@@ -1,0 +1,33 @@
+.annual-toolbar{display:flex;align-items:center;gap:18px;margin:8px 0 18px;flex-wrap:wrap}
+.annual-toolbar label,.annual-scope label{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600}
+.annual-toolbar>span,.annual-scope>span{font-size:12px;color:var(--muted)}
+.annual-cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.annual-case{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--bg);min-width:0}
+.annual-case>div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.annual-case>div:first-child strong{font-size:19px;letter-spacing:-.4px}
+.annual-case>div:first-child>span{font-size:12px;color:var(--muted)}
+.annual-case select{width:100%;min-width:0}
+.annual-case-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:24px;margin-top:12px;color:var(--muted);font-size:11px}
+.annual-scope{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 0}
+.annual-scope select{max-width:260px}
+.annual-table{min-width:880px}
+.annual-table th:not(:first-child){min-width:132px}
+.annual-bridge-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:8px 22px 24px}
+.annual-bridge-summary span{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+.annual-bridge-summary strong{font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.annual-contributions{padding:0 22px 12px}
+.annual-contribution{display:grid;grid-template-columns:110px 1fr 140px;gap:18px;align-items:center;margin:14px 0;font-size:12px}
+.annual-contribution>strong{text-align:right;font-variant-numeric:tabular-nums}
+.annual-contribution-track{position:relative;height:9px;background:var(--soft);border-radius:4px}
+.annual-contribution-track::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.annual-contribution-track i{position:absolute;height:100%;border-radius:4px}
+.annual-contribution-track .up{background:var(--blue)}
+.annual-contribution-track .down{background:var(--red)}
+.annual-positive{color:var(--blue)}
+.annual-equation,.annual-warning{margin:0;padding:4px 22px 20px;color:var(--muted);font-size:12px}
+.annual-warning{color:var(--red)}
+.annual-empty{padding:12px 22px 28px;color:var(--muted);font-size:13px}
+html[data-theme=dark] .annual-case{background:#191f29}
+@media(max-width:850px){.annual-cases{grid-template-columns:1fr}.annual-case{padding:16px}.annual-case>div:first-child{margin-bottom:10px}.annual-contribution{grid-template-columns:90px 1fr 105px;gap:10px}.annual-bridge-summary{gap:10px}.annual-bridge-summary strong{font-size:18px}.annual-scope{align-items:flex-start}.annual-scope label{flex-direction:column;align-items:flex-start}.annual-scope select{max-width:220px}}
+
+.annual-source{display:block;font-size:10px;font-weight:400;white-space:normal;overflow-wrap:anywhere;color:var(--muted);margin-top:5px;max-width:220px}
