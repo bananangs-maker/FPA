@@ -1,9 +1,12 @@
+:root{--chart-revenue:#7183a0}
+html[data-theme=dark]{--chart-revenue:#b9c7dc}
+.dashboard-panels .bar:not(.dark),.dashboard-panels .legend i:not(.dark),.dashboard-panels .bridge-fill:not(.strong){background:var(--chart-revenue)}
 .dashboard-panels .month-bar{position:relative;isolation:isolate;border-radius:7px;outline:none}
 .dashboard-panels .month-bar::before{content:"";position:absolute;inset:-3px -3px 17px;border-radius:7px;background:var(--focus);opacity:0;z-index:-1;transition:opacity .18s}
 .dashboard-panels .bar{transform-origin:center bottom;transition:transform .18s,opacity .18s,filter .18s}
 .dashboard-panels .month-bar.is-chart-active::before{opacity:1}
 .dashboard-panels .month-bar.is-chart-active .bar{transform:scaleX(1.16);filter:brightness(1.08)}
-.dashboard-panels .bar-chart:has(.is-chart-active) .month-bar:not(.is-chart-active) .bar{opacity:.4}
+.dashboard-panels .bar-chart:has(.is-chart-active) .month-bar:not(.is-chart-active) .bar{opacity:.86}
 .dashboard-panels .month-bar.is-chart-active small{color:var(--blue);font-weight:700}
 .dashboard-panels .chart-hit:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
 .dashboard-panels .bridge-row{border-radius:6px;transition:background .18s}
