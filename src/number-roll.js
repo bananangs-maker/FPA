@@ -44,10 +44,7 @@ function initNumberRoll(){
     if(!target||!root.contains(target)||target.contains(event.relatedTarget)||event.pointerType==='touch')return;
     startNumberRoll(target);
   });
-  root.addEventListener('pointerout',event=>{
-    const target=event.target.closest?.('.number-roll');
-    if(target&&!target.contains(event.relatedTarget))target._finishNumberRoll?.();
-  });
+  // Leaving the number never cancels a started cycle; re-entry while running is ignored.
   root.addEventListener('pointerdown',()=>clearNumberRolls());
   document.addEventListener('visibilitychange',()=>{if(document.hidden)clearNumberRolls();});
 }

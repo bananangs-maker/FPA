@@ -1,11 +1,11 @@
 {
   "name": "fpa",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "private": true,
   "description": "FPA · 제조업 손익 시뮬레이터",
   "scripts": {
     "start": "node server.cjs",
-    "test": "node verify.cjs && node verify-assistant.cjs && node verify-market.cjs && node verify-accounting-theme.cjs && node verify-planning-learning.cjs && node verify-favicon.cjs && node verify-inventory-restore.cjs && node verify-qa.cjs && node verify-demo.cjs && node verify-annual.cjs && node verify-economy.cjs",
+    "test": "node verify.cjs && node verify-assistant.cjs && node verify-market.cjs && node verify-accounting-theme.cjs && node verify-planning-learning.cjs && node verify-favicon.cjs && node verify-inventory-restore.cjs && node verify-qa.cjs && node verify-demo.cjs && node verify-annual.cjs && node verify-economy.cjs && node verify-csv-data.cjs && node verify-number-roll.cjs",
     "build": "node build.cjs",
     "dev": "node server.cjs"
   },
