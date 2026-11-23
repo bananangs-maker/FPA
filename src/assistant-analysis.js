@@ -3,6 +3,15 @@ const QUERY_SECTORS=[{table:'sgPools',key:'sgFixed',label:'판관고정비',cont
 let financeConversation=null,financeClarification=null;
 function clearFinanceConversation(){financeConversation=null;financeClarification=null;}
 function financeConversationValid(c=active()){return financeConversation?.caseId===c.id&&financeConversation.workspace===workspaceStorageKey();}
+// Conversational normalization is used only for read-only finance questions.
+function financeNaturalQuestion(text){
+ let query=String(text).normalize('NFKC').trim();
+ query=query.replace(/^\s*(?:(?:음+|어+|아+|마+|저기|아니|그니까|그러니까)(?=\s|[.,!?~…]|\d)\s*[.,!?~…]*\s*)+/,'');
+ query=query.replace(/(^|[^\d])(\d{2})\s*년/g,(_,prefix,year)=>prefix+(2000+Number(year))+'년');
+ query=query.replace(/(?:다\s*(?:하면|합하면|합치면|더하면)|전부\s*(?:합하면|합치면|더하면)|모두\s*(?:합하면|합치면|더하면))/g,' 합계 ');
+ query=query.replace(/얼마(?:냐고|냐구|인가요|인지|인가|야|냐|니|나요|지|노|고|예요|에요|임)(?![가-힣])/g,'얼마');
+ return query.trim();
+}
 function financeQueryIsConcept(text){const n=chatNorm(text);return /이란|뭐|무엇|무슨|뜻|정의|설명|왜|어떻게|계산식|분개|차변|대변|영향|분류|방법|바뀌|변하|연동|손익분기|예시|가정|이면|라면|경우/.test(n)||(/인가(?:요)?[?？.!]*$/.test(n)&&!/얼마|몇|비중|비율|차지|퍼센트/.test(n));}
 function financeQueryIsCommand(text){const n=chatNorm(text);return /[\d,.]+(?:%p|%|원|달러|kg|기|일)?(?:으로|로)?[.!]*$/.test(n)||(/(?:상승|하락|인상|인하|설정|지정|적용(?!환율)|바꿔|변경|조정|올려|낮춰)/.test(n)&&/\d/.test(n));}
 function financeComparisonType(text){const n=chatNorm(text);if(/전년|전년동기|작년대비|지난해대비/.test(n))return 'year';if(/전분기|지난분기대비/.test(n))return 'quarter';if(/전월|지난달대비|지난달보다/.test(n))return 'month';if(/예산대비|계획대비|계획과비교|예산과비교/.test(n))return 'budget';return null;}
@@ -13,15 +22,31 @@ function financeParameter(text){const n=chatNorm(text);if(/환율/.test(n)){cons
 }
 function financeAccountMatches(text,c){const n=chatNorm(text),names=new Set([...MFG_ACCOUNTS,...SG_ACCOUNTS,...QUERY_SECTORS.flatMap(s=>c[s.table].map(p=>p.account))].filter(Boolean)),found=[];for(const name of [...names].sort((a,b)=>chatNorm(b).length-chatNorm(a).length)){const a=chatNorm(name),start=n.indexOf(a);if(start<0||found.some(t=>start<t.end&&start+a.length>t.start))continue;found.push({name,start,end:start+a.length,sectors:QUERY_SECTORS.filter(s=>c[s.table].some(p=>p.account===name)||(s.table==='sgPools'?SG_ACCOUNTS:s.table==='mfgPools'?MFG_ACCOUNTS:[]).includes(name))});}return found.sort((a,b)=>a.start-b.start);}
 function financeFollowup(text,c=active(),context=financeConversation){if(!(context?.caseId===c.id&&context.workspace===workspaceStorageKey())||financeQueryIsCommand(text)||financeQueryIsConcept(text))return false;const clean=chatNorm(text).replace(/^(?:그럼|그러면|그렇다면|그건|그거|이번엔|다음은)/,'').replace(/20\d{2}년|\d{1,2}월|[1-4]분기|상반기|하반기|연간|전기간|전체기간|올해|이번달|지난달|전월|전년|전분기|계획|예산|대비|비교|도|은|는|요|어때|얼마|몇|\?|？|!|\.|~|,/g,'');return clean===''||/^(그럼|그러면|그렇다면|이번엔)/.test(chatNorm(text))&&financeParameter(text)!==null;}
-function dataQuestionIntent(text){if(financeQueryIsCommand(text))return null;const comparison=financeComparisonType(text);if(financeFollowup(text))return 'finance';if(financeQueryIsConcept(text)&&!comparison)return legacyDataQuestionIntent(text);if(financeParameter(text))return 'finance';const original=legacyDataQuestionIntent(text);if(original)return original;if((comparison||/증감|증가율|감소율/.test(text))&&financeMetricMatches(financeStripComparison(text)).length)return 'finance';if(!financeQueryIsConcept(text)&&financeAccountMatches(text,active()).length)return 'finance';return null;}
+function dataQuestionIntent(text){
+ const query=financeNaturalQuestion(text),n=chatNorm(query);
+ if(financeQueryIsCommand(query))return null;
+ // A value lookup such as "27년 매출 뭐야" is not a definition request.
+ const asksValue=/얼마|몇|금액|합계|총매출|매출전부|20\d{2}년|\d{1,2}월|[1-4]분기|상반기|하반기/.test(n);
+ const asksExplanation=/이란|정의|뜻|왜|어떻게|계산식|분개|차변|대변|설명|영향|분류|방법|가정|예시|이면|라면|경우|손익분기/.test(n);
+ if(financeMetricMatches(query).length&&asksValue&&!asksExplanation)return 'finance';
+ const comparison=financeComparisonType(query);
+ if(financeFollowup(query))return 'finance';
+ if(financeQueryIsConcept(query)&&!comparison)return legacyDataQuestionIntent(query);
+ if(financeParameter(query))return 'finance';
+ const original=legacyDataQuestionIntent(query);
+ if(original)return original;
+ if((comparison||/증감|증가율|감소율/.test(query))&&financeMetricMatches(financeStripComparison(query)).length)return 'finance';
+ if(!financeQueryIsConcept(query)&&financeAccountMatches(query,active()).length)return 'finance';
+ return null;
+}
 function financeQueryScope(text,c,defaults,now){return financeQuestionScope(financeStripComparison(text).normalize('NFKC').replace(/(\d)\s+월/g,'$1월'),c,defaults,now);}
 function financeSubject(text,c){let rest=financeStripComparison(text).normalize('NFKC');for(const p of [...c.products,...c.sites].sort((a,b)=>b.name.length-a.name.length))rest=rest.split(p.name).join(' ');rest=rest.replace(/20\d{2}년|\d{1,2}월?\s*[~～〜-]\s*\d{1,2}월|\d{1,2}\s*월|[1-4]분기|상반기|하반기|연간|전기간|전체\s*기간|올해|이번\s*해|이번\s*달|이달|당월|지난\s*달|작년|지난해|내년|다음해/g,' ').replace(/^(?:그럼|그러면|그렇다면|이번엔)\s*/,'').trim();return rest;}
 function financeScopeCaption(c,s){const p=c.products.find(p=>p.id===s.product);return (p?p.name:s.site||'전체 공장·제품')+' · '+(s.months.length===12?'1~12월':s.months.join(', ')+'월');}
 function financeAnswerHeader(c,s){return '<p><strong>'+esc(c.year+'년 · '+c.scenario+' / '+c.name+' · '+c.kind)+'</strong></p><p>'+esc(financeScopeCaption(c,s))+'</p>';}
 function financeNormalizeSector(text,name){const n=chatNorm(text),i=n.indexOf(chatNorm(name)),prefix=n.slice(0,Math.max(0,i));const tail=prefix.split(/대비|중에서|중|에서/).at(-1);if(/판관고정|판관|판매관리|판매비/.test(tail))return 'sgPools';if(/제조고정|제조|공장경비|공장/.test(tail))return 'mfgPools';if(/노무|생산인건/.test(tail))return 'labor';if(/판관|판매관리|판매비/.test(n))return 'sgPools';if(/제조원가|제조경비|제조고정/.test(n))return 'mfgPools';if(/노무비/.test(n))return 'labor';return null;}
 function financeMetricText(text,c){let s=text;for(const p of [...c.products,...c.sites].sort((a,b)=>b.name.length-a.name.length))s=s.split(p.name).join(' ');return s;}
-function financeUnknownSubject(subject,c){let n=chatNorm(subject);for(const a of financeAccountMatches(subject,c))n=n.split(chatNorm(a.name)).join('');for(const {alias} of financeMetricMatches(n))n=n.split(alias).join('');n=n.replace(/판관고정비|제조고정비|노무비|제조|판관|판매관리|금액|발생액|손익|전체|전사|공장|제품|월별|매월|월마다|추이|합계|기준|대비|중에서|내에서|에서|중|차지하는|차지한|차지|비중|비율|구성비|몇퍼센트|몇프로|퍼센트|얼마인가요|얼마인가|얼마야|얼마냐|얼마|몇인가요|몇이야|몇|알려주세요|알려줘|알려|보여주세요|보여줘|보여|조회|확인해줘|확인|궁금해|계산해줘|계산|우리회사|우리|현재|지금|선택한|선택|좀|정도|은|는|이|가|의|을|를|와|과|도|요|야|냐|\?|？|!|\.|,|%|한번|어때|얼만데/g,'');return n;}
-function planFinancialQuestion(text,c,defaults,options={}){let query=text,baseScope=defaults;const follow=options.context&&options.context.caseId===c.id&&options.context.workspace===workspaceStorageKey()&&financeFollowup(text,c,options.context);if(follow){baseScope=options.context.scope;if(!financeMetricMatches(text).length&&!financeAccountMatches(text,c).length&&!financeParameter(text))query=text+' '+options.context.subject;}
+function financeUnknownSubject(subject,c){let n=chatNorm(subject);for(const a of financeAccountMatches(subject,c))n=n.split(chatNorm(a.name)).join('');for(const {alias} of financeMetricMatches(n))n=n.split(alias).join('');n=n.replace(/판관고정비|제조고정비|노무비|제조|판관|판매관리|금액|발생액|손익|전체|전사|공장|제품|월별|매월|월마다|추이|합계|기준|대비|중에서|내에서|에서|중|차지하는|차지한|차지|비중|비율|구성비|몇퍼센트|몇프로|퍼센트|얼마인가요|얼마인가|얼마야|얼마냐|얼마|몇인가요|몇이야|몇|알려주세요|알려줘|알려|보여주세요|보여줘|보여|조회|확인해줘|확인|궁금해|계산해줘|계산|우리회사|우리|현재|지금|선택한|선택|좀|정도|은|는|이|가|의|을|를|와|과|도|요|야|냐|\?|？|!|\.|,|%|한번|어때|얼만데|총|뭐냐고|뭐냐구|뭐야|뭐냐|뭐/g,'');return n;}
+function planFinancialQuestion(text,c,defaults,options={}){let query=financeNaturalQuestion(text),baseScope=defaults;const follow=options.context&&options.context.caseId===c.id&&options.context.workspace===workspaceStorageKey()&&financeFollowup(text,c,options.context);if(follow){baseScope=options.context.scope;if(!financeMetricMatches(text).length&&!financeAccountMatches(text,c).length&&!financeParameter(text))query=text+' '+options.context.subject;}
  let scope;try{scope=financeQueryScope(query,c,baseScope,options.now);}catch(e){return {kind:'error',message:e.message};}const subject=financeSubject(query,c),comparison=financeComparisonType(query)||(follow?options.context.comparison:null),parameter=financeParameter(subject),common={text:query,subject,scope,comparison,followup:!!follow};
  if(parameter){if(parameter.type==='fxChoice')return {...common,kind:'clarify',message:'어느 적용환율을 확인할까요? 공개 시세와 시나리오 입력값은 따로 관리됩니다.',choices:[{label:'매출 적용환율',question:query.replace(/적용환율|시나리오\s*환율|입력\s*환율|설정\s*환율/,'매출 적용환율')},{label:'원재료 적용환율',question:query.replace(/적용환율|시나리오\s*환율|입력\s*환율|설정\s*환율/,'원재료 적용환율')}]};if(comparison)return {...common,kind:'error',message:'환율·단가는 제품·월별로 다를 수 있습니다. 각 기간의 적용값을 조회해 비교하세요. 손익 금액처럼 합산해 증감률을 계산하지 않습니다.'};return {...common,kind:'parameter',parameter};}
  const computed=financeComputedSpec(subject);if(computed)return {...common,kind:'computed',computed};
