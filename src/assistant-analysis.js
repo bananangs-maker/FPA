@@ -6,10 +6,10 @@ function financeConversationValid(c=active()){return financeConversation?.caseId
 // Conversational normalization is used only for read-only finance questions.
 function financeNaturalQuestion(text){
  let query=String(text).normalize('NFKC').trim();
- query=query.replace(/^\s*(?:(?:음+|어+|아+|저기|아니|그니까|그러니까)(?=\s|[.,!?~…]|\d)\s*[.,!?~…]*\s*)+/,'');
+ query=query.replace(/^\s*(?:(?:음+|어+|아+|마+|저기|아니|그니까|그러니까)(?=\s|[.,!?~…]|\d)\s*[.,!?~…]*\s*)+/,'');
  query=query.replace(/(^|[^\d])(\d{2})\s*년/g,(_,prefix,year)=>prefix+(2000+Number(year))+'년');
  query=query.replace(/(?:다\s*(?:하면|합하면|합치면|더하면)|전부\s*(?:합하면|합치면|더하면)|모두\s*(?:합하면|합치면|더하면))/g,' 합계 ');
- query=query.replace(/얼마(?:냐고|냐구|인가요|인지|인가|야|냐|니|나요|지)/g,'얼마');
+ query=query.replace(/얼마(?:냐고|냐구|인가요|인지|인가|야|냐|니|나요|지|노|고|예요|에요|임)(?![가-힣])/g,'얼마');
  return query.trim();
 }
 function financeQueryIsConcept(text){const n=chatNorm(text);return /이란|뭐|무엇|무슨|뜻|정의|설명|왜|어떻게|계산식|분개|차변|대변|영향|분류|방법|바뀌|변하|연동|손익분기|예시|가정|이면|라면|경우/.test(n)||(/인가(?:요)?[?？.!]*$/.test(n)&&!/얼마|몇|비중|비율|차지|퍼센트/.test(n));}
