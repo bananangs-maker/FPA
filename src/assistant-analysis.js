@@ -6,11 +6,23 @@ function financeConversationValid(c=active()){return financeConversation?.caseId
 // Conversational normalization is used only for read-only finance questions.
 function financeNaturalQuestion(text){
  let query=String(text).normalize('NFKC').trim();
- query=query.replace(/^\s*(?:(?:음+|어+|아+|마+|저기|아니|그니까|그러니까)(?=\s|[.,!?~…]|\d)\s*[.,!?~…]*\s*)+/,'');
- query=query.replace(/(^|[^\d])(\d{2})\s*년/g,(_,prefix,year)=>prefix+(2000+Number(year))+'년');
- query=query.replace(/(?:다\s*(?:하면|합하면|합치면|더하면)|전부\s*(?:합하면|합치면|더하면)|모두\s*(?:합하면|합치면|더하면))/g,' 합계 ');
- query=query.replace(/얼마(?:냐고|냐구|인가요|인지|인가|야|냐|니|나요|지|노|고|예요|에요|임)(?![가-힣])/g,'얼마');
- return query.trim();
+ // Ignore conversational starters, including dialectal exclamations, without erasing finance terminology.
+ query=query.replace(/^\s*(?:(?:음+|으음+|어+|아+|마+|아따|어따|워매|워메|오메|오매|거시기|시방|저기|있잖아|있잖여|아니|그니까|그러니까|근디|근데|긍께|그랑께)(?=\s|[.,!?~…]|\d)\s*[.,!?~…]*\s*)+/,'');
+ // A two-digit year in finance questions is an explicit 2000s year, never a month or a quantity.
+ query=query.replace(/(^|[^\d])(\d{2})\s*년(?:도)?/g,(_,prefix,year)=>prefix+(2000+Number(year))+'년');
+ // Regional forms for how much / what / how many.
+ query=query.replace(/(?:얼매|월매|얼마)(?:나)?(?:냐고|냐구|당가|랑가|인겨|인디|인디요|이여|여|유|요|노|고|꼬|인감|인가|인지|이나|나|임|냐|니|예요|에요|지|것소|겄소|겄냐)?(?=\s|[?!.,~…]|$)/g,'얼마');
+ query=query.replace(/몇(?:이나|이고|이여|인겨|인디|인가|이냐|이노|이야|여|노|고)(?=\s|[?!.,~…]|$)/g,'몇');
+ query=query.replace(/(?:뭐|머)(?:여|요|당가|다냐|시여|인겨|인디|고|노|냐고|냐구)(?=\s|[?!.,~…]|$)/g,'뭐야');
+ // Recognize a request to add up values, not a request to modify inputs.
+ query=query.replace(/(?:다|전부|모두|몽땅|싸그리|싹\s*다|모다)\s*(?:하면|허믄|하믄|합치면|합치믄|합쳐불믄|합쳐불면|합허믄|합하면|더하면|더하믄|더허믄|더해불믄|더해불면)/g,' 합계 ');
+ query=query.replace(/(?:합치믄|합치면|합허믄|합허면|합하면|더하믄|더하면|더허믄|더해불믄|더해불면|모아보믄|모으면|총합|도합|다합쳐서|전부다)(?=\s|[?!.,~…]|$)/g,' 합계 ');
+ query=query.replace(/(?:몽땅|싸그리|싹\s*다|전부|모두|모다)(?=\s|[?!.,~…]|$)/g,' 합계 ');
+ // Verb endings following a recognized amount question are linguistic noise;
+ // do not discard arbitrary unknown terms or comparison/change verbs.
+ query=query.replace(/(얼마|몇)\s*(?:되|나오|허|하)(?:냐|나요|니|노|고|나|여|당가|랑가|는겨|는거여|는거야|는디|는감|는가|는지|는교|는당가|는거냐|는거노|것소|겄소|것냐|겄냐|겠어|겠나|겠냐|나여|노잉|는디요|는가요|나옴|는지요)(?=\s*[?!.,~…]*$)/g,'$1');
+ query=query.replace(/[?!.,~…]+\s*$/,'').trim();
+ return query.replace(/\s+/g,' ');
 }
 function financeQueryIsConcept(text){const n=chatNorm(text);return /이란|뭐|무엇|무슨|뜻|정의|설명|왜|어떻게|계산식|분개|차변|대변|영향|분류|방법|바뀌|변하|연동|손익분기|예시|가정|이면|라면|경우/.test(n)||(/인가(?:요)?[?？.!]*$/.test(n)&&!/얼마|몇|비중|비율|차지|퍼센트/.test(n));}
 function financeQueryIsCommand(text){const n=chatNorm(text);return /[\d,.]+(?:%p|%|원|달러|kg|기|일)?(?:으로|로)?[.!]*$/.test(n)||(/(?:상승|하락|인상|인하|설정|지정|적용(?!환율)|바꿔|변경|조정|올려|낮춰)/.test(n)&&/\d/.test(n));}
