@@ -2,15 +2,15 @@
 // Read-only sensitivity estimates for finance metrics. Not a driver-based recalculation.
 const FINANCE_WHATIF_KEYS=new Set(['revenue','op','ebitda']);
 function financeWhatIfCandidate(text,context=null){
- const query=financeNaturalQuestion(text),n=chatNorm(query);
+ const query=financeNaturalQuestion(text),n=chatNorm(query),signed=/(?<![\d.])[+-]\d+(?:\.\d+)?\s*(?:%|퍼센트|프로)/.test(query);
  const values=financeMetricMatches(query);
  const hasMetric=values.some(t=>FINANCE_WHATIF_KEYS.has(t.metric.key));
  const previous=!!(context?.whatIfMetricKey&&FINANCE_WHATIF_KEYS.has(context.whatIfMetricKey));
  if(!hasMetric&&!previous)return false;
  if(!/(?:%|퍼센트|프로|몇퍼)/.test(n))return false;
- if(!/(?:오르|오를|올라|올랐|상승|증가|늘|높아|인상|개선|내리|내릴|내려|내렸|하락|감소|줄|떨어|낮아|인하|축소|악화|바뀌|변하|변동|[+-]\d)/.test(n))return false;
+ if(!/(?:오르|오른|오를|올라|올랐|상승|증가|늘|높아|인상|개선|내리|내린|내릴|내려|내렸|하락|감소|줄|떨어|낮아|인하|축소|악화|바뀌|변하|변동)/.test(n)&&!signed)return false;
  // A hypothetical query, not an instruction to edit a sales price or CASE input.
- return /[?？]|(?:면|다면|때|경우|가정|상승시|하락시|증가시|감소시|변동시)(?:[^\S\r\n]|$|[?？])|(?:오르면|내리면|줄면|늘면|올랐을때|내렸을때)|[+-]\d+(?:\.\d+)?(?:%|퍼센트|프로)/.test(n);
+ return /[?？]|(?:면|다면|때|경우|가정|상승시|하락시|증가시|감소시|변동시)(?:[^\S\r\n]|$|[?？])|(?:오르면|오른다면|내리면|줄면|늘면|올랐을때|내렸을때)/.test(n)||signed;
 }
 function financeWhatIfPlan(text,c,defaults,options={}){
  const context=options.context?.caseId===c.id&&options.context.workspace===workspaceStorageKey()?options.context:null;
@@ -29,7 +29,7 @@ function financeWhatIfPlan(text,c,defaults,options={}){
  if(rates.length!==1)return fail('증감률을 하나만 숫자로 지정해 주세요. 예: “27년 영업이익 10% 오르면?”');
  let rate=Number(rates[0][1]);
  if(!Number.isFinite(rate)||Math.abs(rate)>1000)return fail('가정 증감률은 절댓값 1,000% 이내로 입력해 주세요.');
- const up=/(?:오르|오를|올라|올랐|상승|증가|늘|높아|인상|개선|상향)/.test(n);
+ const up=/(?:오르|오른|오를|올라|올랐|상승|증가|늘|높아|인상|개선|상향)/.test(n);
  const down=/(?:내리|내릴|내려|내렸|하락|감소|줄|떨어|낮아|인하|축소|악화|빠지)/.test(n);
  if(up&&down)return fail('증가와 감소 방향이 함께 적혀 있습니다. 어느 방향인지 확인해 주세요.');
  if(rates[0][1].startsWith('+')&&down||rates[0][1].startsWith('-')&&up)return fail('증감 기호와 상승·하락 표현이 서로 다릅니다.');
