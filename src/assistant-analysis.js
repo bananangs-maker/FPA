@@ -11,7 +11,7 @@ function financeNaturalQuestion(text){
  // A two-digit year in finance questions is an explicit 2000s year, never a month or a quantity.
  query=query.replace(/(^|[^\d])(\d{2})\s*년(?:도)?/g,(_,prefix,year)=>prefix+(2000+Number(year))+'년');
  // Regional forms for how much / what / how many.
- query=query.replace(/(?:얼매|월매|얼마)(?:나)?(?:냐고|냐구|당가|랑가|인겨|인디|인디요|이여|여|유|요|노|고|꼬|인감|인가|인지|이나|나|임|냐|니|예요|에요|지|것소|겄소|겄냐)?(?=\s|[?!.,~…]|$)/g,'얼마');
+ query=query.replace(/(?:얼매|월매|얼마|얼만)(?:나)?(?:냐고|냐구|당가|랑가|인겨|인디요|인디|이여|여|유|요|노|고|꼬|교|기고|데예|데요|데|디|겨|것소|겄소|겄냐|인감|인가|인지|이나|나|임|냐|니|예요|에요|지|가|감)?(?=\s|[?!.,~…]|$)/g,'얼마');
  query=query.replace(/몇(?:이나|이고|이여|인겨|인디|인가|이냐|이노|이야|여|노|고)(?=\s|[?!.,~…]|$)/g,'몇');
  query=query.replace(/(?:뭐|머)(?:여|요|당가|다냐|시여|인겨|인디|고|노|냐고|냐구)(?=\s|[?!.,~…]|$)/g,'뭐야');
  // Recognize a request to add up values, not a request to modify inputs.
