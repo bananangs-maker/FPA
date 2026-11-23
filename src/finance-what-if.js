@@ -6,6 +6,8 @@ function financeWhatIfCandidate(text,context=null){
  const values=financeMetricMatches(query);
  const hasMetric=values.some(t=>FINANCE_WHATIF_KEYS.has(t.metric.key));
  const previous=!!(context?.whatIfMetricKey&&FINANCE_WHATIF_KEYS.has(context.whatIfMetricKey));
+ // Never hijack existing input-driver/FX what-if questions.
+ if(/환율|단가|판매량|생산량|수율|원재료|투입비율/.test(n))return false;
  if(!hasMetric&&!previous)return false;
  if(!/(?:%|퍼센트|프로|몇퍼)/.test(n))return false;
  if(!/(?:오르|오른|오를|올라|올랐|상승|증가|늘|높아|인상|개선|내리|내린|내릴|내려|내렸|하락|감소|줄|떨어|낮아|인하|축소|악화|바뀌|변하|변동)/.test(n)&&!signed)return false;
