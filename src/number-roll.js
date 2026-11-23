@@ -28,7 +28,7 @@ function initNumberRoll(){
   clearNumberRolls();
   const root=document.getElementById('content');
   if(!root||currentGroup().id!=='profit')return;
-  for(const element of root.querySelectorAll('.card-value, .trend strong, .bridge-row strong, tbody td')){
+  for(const element of root.querySelectorAll('.card-value, .trend strong, .bridge-row strong, tbody td, .trace-value')){
     if(element.querySelector('input,select,button,a,.number-roll'))continue;
     for(const node of [...element.childNodes]){
       if(node.nodeType!==3||!/^[-+−]?\d[\d,]*(?:\.\d+)?(?:%p?)?$/.test(node.textContent.trim()))continue;
