@@ -15,6 +15,9 @@ const required=[
  ['A4 보고 구성','function executiveReportMarkup('],
  ['분석형 챗봇','function decisionChatAnswer('],
  ['연속 대화 문맥','function decisionChatSetScenario('],
+ ['두 변수 제약 역산','function buildConstrainedGoalSeek('],
+ ['명시적 CVP','function buildExplicitCVP('],
+ ['개별 표 내보내기','function decisionReportPartRows('],
  ['코발트 UI','decision-studio'],
  ['원가 계산 유지','function calculate(']
 ];
