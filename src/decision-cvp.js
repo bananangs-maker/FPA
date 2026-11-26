@@ -1,6 +1,7 @@
 // CVP workbench with EXPLICIT cost-behavior inputs. Never infer fixed/variable
 // labels from pooled accounting expenses or silently recast the original P&L.
-let decisionBepMode='model',decisionCvpPeriod='all',decisionCvpCosts={},decisionCvpFixed='',decisionCvpDA='',decisionCvpAmountUnit='100000000',decisionCvpAllocation='none',decisionCvpPreview=null;
+let decisionBepMode='model',decisionCvpPeriod='all',decisionCvpCosts={},decisionCvpFixed='',decisionCvpDA='',decisionCvpAmountUnit='100000000',decisionCvpAllocation='none',decisionCvpPreview=null,decisionCvpWorkspaceKey='';
+function decisionCvpIsolateInputs(c){const key=workspaceStorageKey()+':'+c.id;if(decisionCvpWorkspaceKey===key)return;decisionCvpWorkspaceKey=key;decisionCvpCosts={};decisionCvpFixed='';decisionCvpDA='';decisionCvpAllocation='none';decisionCvpPreview=null;}
 const decisionOriginalBepScreen=decisionBepScreen;
 decisionBepScreen=function(){
  return '<div class="decision-tabs decision-bep-modes" role="tablist" aria-label="손익분기점 분석 방식">'+
@@ -57,7 +58,7 @@ function buildExplicitCVP(c,scope,config){
  return {products:allocationItems,sourceId:c.id,scope:clone(scope),fixed,dep,variableTotal,contribution,cmRatio,avgPrice,avgVariable,avgCm,qty,sales,operating,ebitda,bepOP,bepEBITDA,marginSafety,leverage,allocation,ledgerOP:observed.op,ledgerEBITDA:observed.ebitda,reconciliation:operating-observed.op,sourceFingerprint:JSON.stringify(c)};
 }
 function decisionCvpScreen(){
- const c=active(),scope=decisionScope(decisionCvpPeriod);
+ const c=active();decisionCvpIsolateInputs(c);const scope=decisionScope(decisionCvpPeriod);
  let items;try{items=cvpSourceProducts(c,scope);}catch(e){return panel('명시적 원가행태 CVP','<p class="decision-notice">'+esc(e.message)+'</p>');}
  const key=decisionSignature(c,scope,decisionCvpCosts,decisionCvpFixed,decisionCvpDA,decisionCvpAmountUnit,decisionCvpAllocation);
  const result=decisionCvpPreview?.key===key?decisionCvpPreview.result:null;
@@ -97,7 +98,7 @@ function decisionCvpChart(r){
 }
 function decisionRunCVP(){
  try{
-  const c=active(),scope=decisionScope(decisionCvpPeriod),fixed=String(decisionCvpFixed).trim()===''?'':Number(decisionCvpFixed)*Number(decisionCvpAmountUnit);
+  const c=active();decisionCvpIsolateInputs(c);const scope=decisionScope(decisionCvpPeriod),fixed=String(decisionCvpFixed).trim()===''?'':Number(decisionCvpFixed)*Number(decisionCvpAmountUnit);
   const depreciation=String(decisionCvpDA).trim()===''?'':Number(decisionCvpDA)*Number(decisionCvpAmountUnit);
   const result=buildExplicitCVP(c,scope,{unitCost:decisionCvpCosts,fixed,depreciation,allocation:decisionCvpAllocation});
   const key=decisionSignature(c,scope,decisionCvpCosts,decisionCvpFixed,decisionCvpDA,decisionCvpAmountUnit,decisionCvpAllocation);
