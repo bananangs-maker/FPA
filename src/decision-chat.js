@@ -28,7 +28,7 @@ function decisionChatIntent(text){
 function decisionChatDriver(text){
  const n=decisionChatNormalize(text);
  if(/(?:원재료|원자재|자재).*(?:비|단가|가격)|(?:재료비)/.test(n))return 'rawPrice';
- if(/(?:판매단가|판가|판매가격)/.test(n))return 'salesPrice';
+ if(/(?:판매단가|판가|판매가격)/.test(n)||(/단가/.test(n)&&!/원재료|원자재|자재|전력|전기/.test(n)))return 'salesPrice';
  if(/(?:판매량|매출수량|판매수량)/.test(n))return 'qty';
  if(/(?:매출환율|매출적용환율)/.test(n))return 'salesFx';
  if(/(?:원재료환율|원자재환율)/.test(n))return 'rawFx';
@@ -41,13 +41,15 @@ function decisionChatDriver(text){
 }
 function decisionChatRates(text){
  const q=financeNaturalQuestion(text),matches=[...q.matchAll(/(?<![\d.])([+-]?\d+(?:\.\d+)?)\s*(?:%|퍼센트|프로)/g)];
- return matches.map(m=>{
-  const n=chatNorm(q),index=chatNorm(q.slice(0,m.index)).length,after=n.slice(index+m[0].length,index+m[0].length+20);
-  const before=n.slice(Math.max(0,index-18),index),context=before+after;
+ return matches.map((m,i)=>{
+  const end=m.index+m[0].length;
+  const next=matches[i+1]?.index??q.length;
+  const after=chatNorm(q.slice(end,next)),before=chatNorm(q.slice(Math.max(0,m.index-12),m.index));
+  const context=/(?:상승|증가|올리|오르|오른|인상|늘|높|줄|내리|내린|하락|감소|인하|떨어|낮)/.test(after)?after:before;
   const down=/(?:줄|내리|내린|내려|하락|감소|인하|떨어|낮)/.test(context),up=/(?:오르|오른|올리|인상|상승|증가|늘|높)/.test(context);
   let rate=Number(m[1]);
   if(down&&!up)rate=-Math.abs(rate);else if(up&&!down)rate=Math.abs(rate);
-  return {rate,start:m.index,end:m.index+m[0].length};
+  return {rate,start:m.index,end};
  });
 }
 function decisionChatEvaluate(c,scope,changes){
