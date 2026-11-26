@@ -21,6 +21,7 @@ function decisionChatIntent(text){
  if(/(?:왜|원인|기여|요인|이유).*(?:줄|증가|하락|감소|올랐|변동|늘)|(?:영업이익|이익|ebitda|매출).*(?:왜|원인|요인)/.test(n))return 'bridge';
  if(/(?:달성|맞추|찍으|넘기려|필요한|필요해|얼마나올|어떻게해야).*(?:위해|단가|얼마|몇|조정|늘|올려)|(?:영업이익률|영업이익|ebitda|매출액).*(?:\d+(?:\.\d+)?\s*(?:억|%|퍼센트|프로|백만)).*(?:달성|맞추|찍으)/.test(n))return 'goal';
  if(decisionChatValid()&&/(?:그럼|그러면|거기서|여기서|그수치|그금액)/.test(n)&&/영업이익|영익|에비따|ebitda|매출|원재료비/.test(n)&&(!pct||drivers))return 'scenario-followup';
+ if(!decisionChatValid()&&pct&&/(?:거기서|여기서|그수치|그금액)/.test(n)&&drivers)return 'scenario-followup';
  // The prior pure arithmetic "revenue +%" needs a real sales driver before profit can be estimated.
  if(financeConversationValid(active())&&financeConversation?.whatIfMetricKey==='revenue'&&Number.isFinite(financeConversation.whatIfRate)&&/영업이익|영익|에비따|ebitda/.test(n)&&/그럼|그러면|이때|여기서|그거|거기서/.test(n))return 'revenue-followup';
  if(pct&&hypothetical&&drivers&&askEffect)return 'driver-whatif';
