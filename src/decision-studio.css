@@ -1,0 +1,56 @@
+/* Decision Studio — restrained analysis interface, same palette and spacing as FPA. */
+.decision-studio{max-width:1380px;margin:auto}
+.decision-intro{margin:0 0 19px;padding:4px 0}
+.decision-intro>strong{font-size:16px;font-weight:700;color:var(--ink)}
+.decision-intro p{font-size:12px;color:var(--muted);margin:4px 0}
+.decision-tabs{display:flex;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:0 0 19px}
+.decision-tabs button{font-size:13px;font-weight:550;border:0;border-radius:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);padding:9px 3px 12px;box-shadow:none}
+.decision-tabs button:hover{background:transparent;color:var(--ink)}
+.decision-tabs button.active{background:transparent;color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+html[data-theme=dark] .decision-tabs button,html[data-theme=dark] .decision-tabs button:hover{background:transparent}
+html[data-theme=dark] .decision-tabs button.active{color:var(--blue);border-color:var(--blue)}
+.decision-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:0 20px 18px}
+.decision-controls .field{min-width:0;font-size:12px}
+.decision-controls select,.decision-controls input{width:100%;min-width:0}
+.decision-commands{display:flex;justify-content:flex-end;gap:8px;padding:0 20px 20px}
+.decision-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 20px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.decision-summary>div{padding:14px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.decision-summary>div+div{border-left:1px solid var(--line)}
+.decision-summary span{font-size:11px;color:var(--muted)}
+.decision-summary strong{font-size:19px;color:var(--ink);font-weight:710;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.decision-summary strong.negative{color:var(--red)}
+.decision-studio .hint{padding:0 20px 17px}
+.decision-footnote{font-size:11px;line-height:1.75;color:var(--muted);padding:0 20px;margin:12px 0 18px}
+.decision-notice{padding:14px 16px;margin:0 20px 16px;background:var(--soft);border-radius:6px;color:var(--muted);font-size:13px}
+.decision-details{margin:10px 20px 20px}
+details.decision-details{padding:12px 0;border-top:1px solid var(--line)}
+details.decision-details summary{font-size:12px;font-weight:600;cursor:pointer}
+.decision-details .gridwrap{max-height:370px}
+.decision-waterfall{margin:0 20px 15px}
+.waterfall-row{display:grid;grid-template-columns:154px minmax(0,1fr) 140px;gap:12px;align-items:center;min-height:32px}
+.waterfall-label{font-size:12px;color:var(--ink);white-space:normal}
+.waterfall-track{position:relative;height:21px;border-bottom:1px solid var(--line)}
+.waterfall-zero{position:absolute;top:1px;bottom:0;width:1px;background:var(--muted);opacity:.55}
+.waterfall-mark{position:absolute;height:12px;top:4px;min-width:1px;border-radius:2px}
+.waterfall-mark.positive{background:var(--blue)}
+.waterfall-mark.negative{background:var(--red)}
+.waterfall-mark.total{background:var(--ink)}
+.waterfall-row strong{font-size:11px;font-weight:650;text-align:right;font-variant-numeric:tabular-nums;white-space:normal}
+.decision-bep-chart{margin:0 20px 20px;padding:12px 0}
+.decision-bep-chart svg{display:block;width:100%;height:auto;max-height:320px}
+.bep-axis{stroke:var(--muted);stroke-width:1}
+.bep-baseline{stroke:var(--line);stroke-dasharray:3 4}
+.bep-revenue-line{stroke:var(--blue);stroke-width:3;fill:none;stroke-linejoin:round}
+.bep-cost-line{stroke:var(--red);stroke-width:3;fill:none;stroke-linejoin:round}
+.bep-root-line{stroke:var(--muted);stroke-width:1;stroke-dasharray:5 5}
+.bep-root-point{fill:var(--bg);stroke:var(--ink);stroke-width:2.5}
+.bep-chart-label{fill:var(--muted);font-size:12px}
+.decision-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:11px;color:var(--muted);justify-content:center}
+.decision-legend span{display:inline-flex;align-items:center;gap:5px}
+.decision-legend i{display:inline-block;width:18px;height:3px;background:var(--muted)}
+.decision-legend i.revenue{background:var(--blue)}
+.decision-legend i.cost{background:var(--red)}
+.decision-legend i.breakeven{background:var(--ink)}
+@media(max-width:850px){.waterfall-row{grid-template-columns:115px minmax(0,1fr) 95px;gap:7px}.decision-summary strong{font-size:15px}}
+@media(max-width:560px){.decision-controls{grid-template-columns:1fr}.decision-summary{grid-template-columns:1fr}.decision-summary>div+div{border-left:0;border-top:1px solid var(--line)}.waterfall-row{grid-template-columns:105px minmax(0,1fr);gap:6px}.waterfall-row strong{grid-column:2;text-align:left;margin-top:-4px;margin-bottom:7px}.decision-tabs{gap:12px}}
+@media print{.decision-commands,.decision-tabs{display:none}.decision-bep-chart svg{max-height:240px}.decision-studio .panel{break-inside:avoid}.decision-summary strong{font-size:15px}}
