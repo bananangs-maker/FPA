@@ -11,6 +11,8 @@ const required=[
  ['복수 CASE 비교','function buildScenarioComparison('],
  ['역산 기능','function buildGoalSeek('],
  ['원본 보호 CASE 생성','function goalSeekDraftCase('],
+ ['경영진 보고','function buildExecutiveReport('],
+ ['A4 보고 구성','function executiveReportMarkup('],
  ['코발트 UI','decision-studio'],
  ['원가 계산 유지','function calculate(']
 ];
