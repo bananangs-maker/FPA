@@ -81,11 +81,11 @@ function executiveReportMarkup(r){
  '<div class="report-kpis">'+summary.map(([label,value])=>'<div><span>'+label+'</span><strong>'+nl(value)+'</strong></div>').join('')+'</div>'+
  '<div class="report-grid">'+
  '<section><h3>월별 손익 추이</h3>'+executiveMonthlyChart(r)+'<div class="report-chart-legend"><span>━ 매출액</span><span>━ 영업이익</span></div></section>'+
- '<section><h3>분기별 실적 · '+esc(unitLabel())+'</h3>'+quarters+'<p class="report-detail">매출액·이익률은 연간 합계 및 합산 금액을 기준으로 계산</p></section>'+
- '<section><h3>기준 대비 영업이익 증감</h3>'+bridge+'</section>'+
+ '<section><h3>분기별 실적 · '+esc(unitLabel())+'</h3><span class="report-inline-actions"><button type="button" onclick="decisionExportReportPart(&quot;quarter&quot;,&quot;copy&quot;)">복사</button><button type="button" onclick="decisionExportReportPart(&quot;quarter&quot;,&quot;csv&quot;)">CSV</button></span>'+quarters+'<p class="report-detail">매출액·이익률은 연간 합계 및 합산 금액을 기준으로 계산</p></section>'+
+ '<section><h3>기준 대비 영업이익 증감</h3><span class="report-inline-actions"><button type="button" onclick="decisionExportReportPart(&quot;bridge&quot;,&quot;copy&quot;)">복사</button><button type="button" onclick="decisionExportReportPart(&quot;bridge&quot;,&quot;csv&quot;)">CSV</button></span>'+bridge+'</section>'+
  '<section><h3>주요 경영 리스크 · 데이터 검토</h3><ul>'+r.risks.map(x=>'<li>'+nl(x)+'</li>').join('')+'</ul></section>'+
- '<section><h3>주요 시나리오 전망 · '+esc(unitLabel())+'</h3>'+scenario+'</section>'+
- '<section><h3>핵심 시사점</h3><ul>'+r.insights.map(x=>'<li>'+nl(x)+'</li>').join('')+'</ul></section>'+
+ '<section><h3>주요 시나리오 전망 · '+esc(unitLabel())+'</h3><span class="report-inline-actions"><button type="button" onclick="decisionExportReportPart(&quot;scenario&quot;,&quot;copy&quot;)">복사</button><button type="button" onclick="decisionExportReportPart(&quot;scenario&quot;,&quot;csv&quot;)">CSV</button></span>'+scenario+'</section>'+
+ '<section><h3>핵심 시사점</h3><span class="report-inline-actions"><button type="button" onclick="decisionExportReportPart(&quot;insights&quot;,&quot;copy&quot;)">복사</button><button type="button" onclick="decisionExportReportPart(&quot;insights&quot;,&quot;csv&quot;)">CSV</button></span><ul>'+r.insights.map(x=>'<li>'+nl(x)+'</li>').join('')+'</ul></section>'+
  '</div><footer>본 보고서는 브라우저에 저장된 CASE를 기반으로 자동 작성한 정량 검토자료입니다. 확정되지 않은 인과관계나 외부 사업정보를 추정하지 않습니다. 검산 경고 '+r.warningCount+'건 · 미입력 월 '+r.missing.length+'개</footer></section>';
 }
 function decisionReportScreen(){
@@ -126,4 +126,32 @@ function decisionDownloadReportSvg(){
  const markup=new XMLSerializer().serializeToString(node);
  const text=markup.includes('xmlns=')?markup:markup.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');
  download('FPA_월별손익차트.svg',text,'image/svg+xml;charset=utf-8');
+}
+
+
+function decisionReportPartRows(r,part){
+ if(part==='kpi')return [['지표','금액 원 / 비율 %'],['매출액',r.totals.revenue],['매출원가',r.totals.cogs],['영업이익',r.totals.op],['EBITDA',r.totals.ebitda],['영업이익률 %',r.totals.opMargin*100]];
+ if(part==='quarter')return [['분기','매출액 원','영업이익 원','EBITDA 원'],...r.quarters.map(q=>[q.quarter+'Q',q.values.revenue,q.values.op,q.values.ebitda])];
+ if(part==='bridge'){
+  if(!r.bridge)throw Error('비교할 기준 CASE가 없어 영업이익 증감표가 없습니다.');
+  return [['증감 요인','증감 금액 원','누적 영업이익 원'],...r.bridge.steps.map(s=>[s.label,s.amount,s.to])];
+ }
+ if(part==='scenario'){
+  if(r.scenarios.length<2)throw Error('비교 가능한 시나리오가 2개 미만입니다.');
+  return [['CASE','매출액 원','영업이익 원','EBITDA 원','영업이익률 %'],...r.scenarios.map(c=>[c.label,c.values.revenue,c.values.op,c.values.ebitda,c.values.opMargin*100])];
+ }
+ if(part==='insights')return [['핵심 시사점'],...r.insights.map(x=>[x])];
+ throw Error('지원하지 않는 경영진 보고 항목입니다.');
+}
+function decisionExportReportPart(part,mode){
+ try{
+  const r=decisionReportPreview?.report;
+  if(!r)throw Error('보고서를 먼저 생성하세요.');
+  const rows=decisionReportPartRows(r,part);
+  if(mode==='csv'){download('FPA_보고서_'+part+'.csv',csvInputExport(rows),'text/csv;charset=utf-8');return;}
+  if(mode!=='copy')throw Error('복사 또는 CSV를 선택하세요.');
+  if(!navigator.clipboard?.writeText)throw Error('클립보드를 사용할 수 없습니다.');
+  const tsv=rows.map(row=>row.map(cell=>String(cell??'').replace(/[\r\n\t]+/g,' ')).join('\t')).join('\n');
+  navigator.clipboard.writeText(tsv).then(()=>toast('표를 복사했습니다.')).catch(()=>toast('클립보드 권한을 확인하세요.'));
+ }catch(e){toast(e.message);}
 }
