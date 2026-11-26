@@ -7,6 +7,8 @@ function decisionChatIntent(text){
  const n=decisionChatNormalize(text),matched=financeMetricMatches(financeNaturalQuestion(text));
  const metric=matched.map(x=>x.metric.key);
  const pct=/(?<!\d)(?:[+-]?\d+(?:\.\d+)?)\s*(?:%|프로|퍼센트)/.test(n);
+ // Preserve independent accounting calculators when the user supplies explicit CVP unit inputs.
+ if(/손익분기/.test(n)&&/(?:단위변동비|단위공헌이익|고정비\d+(?:\.\d+)?원)/.test(n))return null;
  const hypothetical=/(?:오르|오른|올리|인상|상승|증가|늘|줄|내리|내린|내려|하락|감소|인하|낮|떨어)/.test(n);
  const drivers=/(?:판매단가|판가|원재료비|원재료단가|원자재|판매량|매출수량|매출환율|환율|노무비|고정비|제조원가|판관비|운반비|포장비|전력단가)/.test(n);
  const askEffect=/(?:영업이익|영익|에비따|ebitda|수익성|실적|어찌|얼마|얼매|얼만|어떻게|결과)/.test(n);
