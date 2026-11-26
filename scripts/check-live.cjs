@@ -13,6 +13,8 @@ const required=[
  ['원본 보호 CASE 생성','function goalSeekDraftCase('],
  ['경영진 보고','function buildExecutiveReport('],
  ['A4 보고 구성','function executiveReportMarkup('],
+ ['분석형 챗봇','function decisionChatAnswer('],
+ ['연속 대화 문맥','function decisionChatSetScenario('],
  ['코발트 UI','decision-studio'],
  ['원가 계산 유지','function calculate(']
 ];
