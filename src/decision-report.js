@@ -1,5 +1,5 @@
 // Phase 5 · Executive report, derived only from the current local CASE and shared FPA model.
-let decisionReportReference='',decisionReportPreview=null;
+let decisionReportReference=null,decisionReportPreview=null;
 function buildExecutiveReport(c,scope,reference=null,peers=[]){
  if(!scope.months?.length)throw Error('보고 기간을 확인하세요.');
  const model=calculate(c),rows=planningRowsFromModel(model,scope),totals=aggregate(rows);
@@ -24,7 +24,7 @@ function buildExecutiveReport(c,scope,reference=null,peers=[]){
  const scenarios=candidates.length>1?buildScenarioComparison(candidates,scope,c).cases.filter(x=>x.available):[];
  const priorYear=peers.find(x=>x.year===c.year-1)||null;
  const signals=decisionAnomalyCandidates(c,scope,{basis:'mom',change:30,points:5,priorYear}).signals.filter(x=>x.status==='검토 신호');
- const riskAlerts=signals.slice().sort((a,b)=>Math.abs(b.magnitude??b.delta)-Math.abs(a.magnitude??a.delta)).slice(0,3);
+ const riskAlerts=signals.slice().sort((a,b)=>Math.abs(b.kind==='pp'?b.delta*100:b.magnitude??0)-Math.abs(a.kind==='pp'?a.delta*100:a.magnitude??0)).slice(0,3);
  const issues=[];
  if(model.warnings.length)issues.push('모형 검산 '+model.warnings.length+'건 확인 필요');
  if(missing.length)issues.push('실적·계획 미입력 월: '+missing.join(', ')+'월');
@@ -47,14 +47,27 @@ function buildExecutiveReport(c,scope,reference=null,peers=[]){
  return {year:c.year,label:c.scenario+' / '+c.name,kind:c.kind,scope:clone(scope),totals,monthly,quarters,scenarios,refValues,bridge,insights:insights.slice(0,4),risks:issues.slice(0,4),missing,warningCount:model.warnings.length,sourceId:c.id};
 }
 function executiveMonthlyChart(report){
- const monthly=report.monthly,values=monthly.flatMap(m=>[m.values.revenue,m.values.op]);
+ const valid=report.monthly.filter(m=>m.entered);
+ if(!valid.length)return '<p class="report-detail">조회 기간에 입력된 월이 없어 추이 차트를 만들지 않았습니다.</p>';
+ const values=valid.flatMap(m=>[m.values.revenue,m.values.op]);
  const min=Math.min(0,...values),max=Math.max(1,...values),span=max-min||1;
  const x=i=>52+i/11*587,y=v=>154-(v-min)/span*119;
- const line=key=>monthly.map(m=>x(m.month-1).toFixed(1)+','+y(m.values[key]).toFixed(1)).join(' ');
- return '<svg viewBox="0 0 686 180" role="img" aria-label="월별 매출액과 영업이익 추이"><line x1="52" y1="35" x2="52" y2="154" class="report-axis"/><line x1="52" y1="154" x2="639" y2="154" class="report-axis"/>'+
- '<polyline class="report-revenue" points="'+line('revenue')+'"/><polyline class="report-profit" points="'+line('op')+'"/>'+
- monthly.map(m=>'<text x="'+x(m.month-1).toFixed(1)+'" y="168" text-anchor="middle" class="report-axis-label">'+m.month+'</text>').join('')+
- '<text x="52" y="21" class="report-axis-label">매출액 / 영업이익 · '+esc(unitLabel())+'</text></svg>';
+ const paths=key=>{
+  const parts=[];let ongoing=[];
+  for(const m of report.monthly){
+   if(!m.entered){if(ongoing.length)parts.push(ongoing);ongoing=[];continue;}
+   ongoing.push(x(m.month-1).toFixed(1)+','+y(m.values[key]).toFixed(1));
+  }
+  if(ongoing.length)parts.push(ongoing);
+  return parts.map(group=>group.length>1?'<polyline points="'+group.join(' ')+'"/>':'<circle cx="'+group[0].split(',')[0]+'" cy="'+group[0].split(',')[1]+'" r="2.6"/>').join('');
+ };
+ return '<svg viewBox="0 0 686 180" role="img" aria-label="입력된 월만 연결한 월별 매출액과 영업이익 추이">'+
+ '<line x1="52" y1="35" x2="52" y2="154" class="report-axis" stroke="#94a3b8"/>'+
+ '<line x1="52" y1="154" x2="639" y2="154" class="report-axis" stroke="#94a3b8"/>'+
+ '<g class="report-revenue" stroke="#2457ed" stroke-width="2.8" fill="none">'+paths('revenue')+'</g>'+
+ '<g class="report-profit" stroke="#ce4549" stroke-width="2.8" fill="none">'+paths('op')+'</g>'+
+ report.monthly.map(m=>'<text x="'+x(m.month-1).toFixed(1)+'" y="168" text-anchor="middle" class="report-axis-label" fill="#64748b" font-size="11">'+m.month+'</text>').join('')+
+ '<text x="52" y="21" class="report-axis-label" fill="#64748b" font-size="11">매출액 / 영업이익 · '+esc(unitLabel())+'</text></svg>';
 }
 function executiveReportMarkup(r){
  const asMoney=v=>display(v)+' '+unitLabel(),nl=v=>esc(v);
@@ -77,11 +90,11 @@ function executiveReportMarkup(r){
 }
 function decisionReportScreen(){
  const c=active(),references=state.cases.filter(x=>x.id!==c.id&&x.year===c.year);
- const reference=references.find(x=>x.id===(decisionReportReference||c.referenceId||compareId))||references[0]||null;
+ const reference=decisionReportReference==='none'?null:references.find(x=>x.id===(decisionReportReference||c.referenceId||compareId))||references[0]||null;
  const peers=state.cases.filter(x=>x.year===c.year&&x.id!==c.id);
  const scope=decisionScope(),key=decisionSignature(c,reference,peers,scope);
  const report=decisionReportPreview?.key===key?decisionReportPreview.report:null;
- let controls='<div class="decision-controls"><label class="field">비교 기준 CASE<select aria-label="경영진 보고 기준 CASE" onchange="decisionReportReference=this.value;decisionReportPreview=null;render()">'+option('','기준 없음',!reference)+references.map(r=>option(r.id,r.scenario+' / '+r.name,r.id===reference?.id)).join('')+'</select></label></div>'+
+ let controls='<div class="decision-controls"><label class="field">비교 기준 CASE<select aria-label="경영진 보고 기준 CASE" onchange="decisionReportReference=this.value;decisionReportPreview=null;render()">'+option('none','기준 없음',!reference)+references.map(r=>option(r.id,r.scenario+' / '+r.name,r.id===reference?.id)).join('')+'</select></label></div>'+
  '<div class="decision-commands"><button type="button" class="primary" onclick="decisionRunReport()">보고서 생성</button>'+(report?'<button type="button" onclick="decisionPrintReport()">PDF 출력…</button><button type="button" onclick="decisionCopyReport()">시사점 복사</button><button type="button" onclick="decisionDownloadReportCsv()">표 CSV 저장</button><button type="button" onclick="decisionDownloadReportSvg()">차트 SVG 저장</button>':'')+'</div>';
  if(!report)return panel('경영진 보고 · Executive Report',controls+'<p class="decision-footnote">A4 가로형 1페이지 요약 보고서입니다. 인쇄 메뉴에서 “PDF로 저장”을 선택할 수 있습니다. 재무 숫자·변동 원인·위험 신호와 시사점은 현재 CASE 및 비교 CASE의 계산값만 사용합니다.</p>');
  return panel('경영진 보고 · Executive Report',controls+executiveReportMarkup(report));
@@ -89,7 +102,7 @@ function decisionReportScreen(){
 function decisionRunReport(){
  try{
   const c=active(),scope=decisionScope(),references=state.cases.filter(r=>r.id!==c.id&&r.year===c.year);
-  const reference=references.find(x=>x.id===(decisionReportReference||c.referenceId||compareId))||references[0]||null;
+  const reference=decisionReportReference==='none'?null:references.find(x=>x.id===(decisionReportReference||c.referenceId||compareId))||references[0]||null;
   const peers=state.cases.filter(x=>x.year===c.year&&x.id!==c.id),report=buildExecutiveReport(c,scope,reference,peers);
   decisionReportPreview={key:decisionSignature(c,reference,peers,scope),report};render();
  }catch(e){decisionReportPreview=null;toast(e.message);}
