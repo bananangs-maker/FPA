@@ -113,7 +113,7 @@ function decisionMultiGoalScreen(){
  const c=active(),scope=decisionAdjustableScope(decisionMultiPeriod);
  const current=aggregate(planningRowsFromModel(calculate(c),{...scope,months:decisionMultiAnnual?chatAllMonths():scope.months}));
  const tMetric=decisionMultiMetric.endsWith('Margin'),hold=decisionMultiConstraintMode==='hold',cMetric=decisionMultiConstraint.endsWith('Margin');
- const targetView=decisionMultiTarget||'',guardValue=hold?current[decisionMultiConstraint]:goalSeekTarget(decisionMultiConstraint,decisionMultiConstraintTarget,decisionMultiConstraintUnit);
+ const targetView=decisionMultiTarget||'',guardValue=hold?current[decisionMultiConstraint]:(String(decisionMultiConstraintTarget).trim()===''?null:goalSeekTarget(decisionMultiConstraint,decisionMultiConstraintTarget,decisionMultiConstraintUnit));
  const key=decisionSignature(c,scope,decisionMultiMetric,decisionMultiTarget,decisionMultiUnit,decisionMultiConstraint,decisionMultiConstraintMode,decisionMultiConstraintTarget,decisionMultiConstraintUnit,decisionMultiX,decisionMultiY,decisionMultiXMin,decisionMultiXMax,decisionMultiYMin,decisionMultiYMax,decisionMultiAnnual);
  const result=decisionMultiPreview?.key===key?decisionMultiPreview.result:null;
  let ui='<div class="decision-controls">'+
