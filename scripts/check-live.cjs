@@ -6,6 +6,9 @@ const required=[
  ['손익 증감 분석','function buildProfitBridge('],
  ['BEP 엔진','function buildBreakEven('],
  ['월별 이상치 탐지','function decisionAnomalyCandidates('],
+ ['단일 민감도','function buildSingleSensitivity('],
+ ['토네이도 분석','function buildTornadoSensitivity('],
+ ['복수 CASE 비교','function buildScenarioComparison('],
  ['코발트 UI','decision-studio'],
  ['원가 계산 유지','function calculate(']
 ];
