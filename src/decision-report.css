@@ -49,3 +49,11 @@
  #executive-report .report-kpis{margin-bottom:3mm!important;padding:2mm 0!important}
  #executive-report footer{font-size:8px!important;margin-top:2mm!important}
 }
+
+
+/* Table actions stay outside the exported page while remaining keyboard accessible. */
+.report-inline-actions{display:inline-flex;gap:5px;vertical-align:middle;margin-left:7px}
+.report-inline-actions button{font:inherit;font-size:10px;font-weight:550;color:var(--blue);border:0;background:transparent;box-shadow:none;padding:2px 4px;cursor:pointer}
+.report-inline-actions button:hover{text-decoration:underline}
+@media(max-width:960px){.decision-report-card .report-grid>section{overflow-x:auto}}
+@media print{#executive-report .report-inline-actions{display:none!important;visibility:hidden!important}#executive-report .report-grid>section{overflow:visible!important}}
