@@ -1,0 +1,51 @@
+/* Minimal executive report: designed to print as one A4 landscape page. */
+.decision-report-card{max-width:100%;margin:4px 20px 22px;padding:20px 22px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;box-shadow:none;font-variant-numeric:tabular-nums}
+.report-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.report-heading>div>strong{font-size:10px;letter-spacing:.12em;color:var(--blue)}
+.report-heading h2{font-size:22px;line-height:1.2;font-weight:750;margin:4px 0;color:var(--ink)}
+.report-heading p,.report-heading>span{font-size:10px;color:var(--muted);margin:0}
+.report-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:11px 0;margin-bottom:13px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);gap:5px}
+.report-kpis>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.report-kpis>div+div{border-left:1px solid var(--line);padding-left:12px}
+.report-kpis span{font-size:10px;color:var(--muted)}
+.report-kpis strong{font-size:16px;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
+.report-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px 19px;align-items:start}
+.report-grid>section{min-width:0;padding:5px 0 6px;border-top:1px solid var(--line)}
+.report-grid h3{font-size:12px;font-weight:700;margin:0 0 8px;color:var(--ink)}
+.report-grid p,.report-grid small,.report-grid li{font-size:10px;line-height:1.5;color:var(--muted)}
+.report-grid ul{margin:0 0 4px;padding-left:16px}
+.report-grid li+li{margin-top:4px}
+.report-table{width:100%;border-collapse:collapse;table-layout:auto;font-size:10px;color:var(--ink);white-space:normal}
+.report-table th,.report-table td{min-width:0;height:auto;padding:6px 5px;border:0;border-bottom:1px solid var(--line);text-align:right;font-size:10px;background:transparent}
+.report-table th:first-child,.report-table td:first-child{text-align:left;position:static;min-width:0;background:transparent}
+.report-table th{font-weight:600;color:var(--muted)}
+.report-table td{font-variant-numeric:tabular-nums}
+.report-chart-legend{display:flex;justify-content:center;gap:16px;color:var(--muted);font-size:9px}
+.report-chart-legend span:first-child{color:var(--blue)}
+.report-chart-legend span:last-child{color:var(--red)}
+.report-axis{stroke:var(--muted);stroke-width:1}
+.report-axis-label{fill:var(--muted);font-size:11px}
+.report-revenue{stroke:var(--blue);stroke-width:2.8;fill:none}
+.report-profit{stroke:var(--red);stroke-width:2.8;fill:none}
+.report-grid svg{width:100%;height:auto;display:block;max-height:134px}
+.decision-report-card footer{font-size:9px;color:var(--muted);line-height:1.4;border-top:1px solid var(--line);padding-top:8px;margin-top:14px}
+@media(max-width:960px){.report-kpis strong{font-size:13px}.report-grid{grid-template-columns:1fr}.report-heading h2{font-size:18px}}
+@media(max-width:560px){.decision-report-card{margin:0 12px;padding:12px}.report-kpis{grid-template-columns:repeat(2,1fr)}.report-kpis>div+div{border-left:0;padding-left:0}.report-grid h3{font-size:12px}}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+ html,body{background:#fff!important;color:#121821!important;margin:0!important;padding:0!important;width:auto!important;height:auto!important}
+ body *{visibility:hidden!important}
+ #executive-report,#executive-report *{visibility:visible!important}
+ #executive-report{position:absolute!important;left:0!important;top:0!important;width:280mm!important;max-width:280mm!important;min-height:0!important;margin:0!important;padding:1mm!important;border:0!important;border-radius:0!important;background:#fff!important;color:#121821!important;box-shadow:none!important;break-inside:avoid!important;page-break-inside:avoid!important}
+ #executive-report .report-heading h2{font-size:18px!important}
+ #executive-report .report-grid{grid-template-columns:1.18fr 1fr!important;gap:5mm 7mm!important}
+ #executive-report .report-grid h3{font-size:11px!important}
+ #executive-report .report-grid li,#executive-report .report-grid p,#executive-report .report-grid small{font-size:9px!important;line-height:1.3!important}
+ #executive-report .report-table th,#executive-report .report-table td{font-size:9px!important;padding:3px 3px!important}
+ #executive-report .report-grid svg{max-height:30mm!important}
+ #executive-report .report-kpis{grid-template-columns:repeat(5,1fr)!important}
+ #executive-report .report-kpis strong{font-size:13px!important}
+ #executive-report .report-kpis span{font-size:9px!important}
+ #executive-report .report-kpis{margin-bottom:3mm!important;padding:2mm 0!important}
+ #executive-report footer{font-size:8px!important;margin-top:2mm!important}
+}
