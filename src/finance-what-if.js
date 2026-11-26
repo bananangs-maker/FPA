@@ -1,6 +1,14 @@
 'use strict';
 // Read-only sensitivity estimates for finance metrics. Not a driver-based recalculation.
 const FINANCE_WHATIF_KEYS=new Set(['revenue','op','ebitda']);
+function financeWhatIfContextKey(plan){
+ if(!plan||!plan.scope||plan.comparison)return null;
+ if(plan.kind==='whatif')return plan.metric.key;
+ if(plan.kind!=='metric')return null;
+ // Only a single, explicit currency metric can be reused: not a ratio or multi-metric report.
+ const metrics=[...new Set(financeMetricMatches(plan.subject).map(t=>t.metric.key))];
+ return metrics.length===1&&FINANCE_WHATIF_KEYS.has(metrics[0])?metrics[0]:null;
+}
 function financeWhatIfCandidate(text,context=null){
  const query=financeNaturalQuestion(text),n=chatNorm(query),signed=/(?<![\d.])[+-]\d+(?:\.\d+)?\s*(?:%|퍼센트|프로)/.test(query);
  const values=financeMetricMatches(query);
@@ -8,7 +16,7 @@ function financeWhatIfCandidate(text,context=null){
  const previous=!!(context?.whatIfMetricKey&&FINANCE_WHATIF_KEYS.has(context.whatIfMetricKey));
  // Never hijack existing input-driver/FX what-if questions.
  if(/환율|단가|판매량|생산량|수율|원재료|투입비율/.test(n))return false;
- if(!hasMetric&&!previous)return false;
+ if(!hasMetric&&!previous&&!/(?:여기서|거기서|그수치|그금액|그값|이금액|그럼|그러면|그렇다면)/.test(n))return false;
  if(!/(?:%|퍼센트|프로|몇퍼)/.test(n))return false;
  if(!/(?:오르|오른|오를|올라|올랐|상승|증가|늘|높아|인상|개선|내리|내린|내릴|내려|내렸|하락|감소|줄|떨어|낮아|인하|축소|악화|바뀌|변하|변동)/.test(n)&&!signed)return false;
  // A hypothetical query, not an instruction to edit a sales price or CASE input.
@@ -23,7 +31,7 @@ function financeWhatIfPlan(text,c,defaults,options={}){
  if(unique.length===1&&FINANCE_WHATIF_KEYS.has(unique[0]))metric=financeMetric(unique[0]);
  if(!unique.length&&context?.whatIfMetricKey)metric=financeMetric(context.whatIfMetricKey);
  const fail=message=>({kind:'whatif-error',message});
- if(!metric)return fail('한 번에 매출액·영업이익·EBITDA 중 한 지표만 가정할 수 있습니다. 매출 변동이 다른 손익 지표에 미치는 영향은 원가·판관비 가정이 필요합니다.');
+ if(!metric)return fail(unique.length>0?'한 번에 매출액·영업이익·EBITDA 중 한 지표만 가정할 수 있습니다. 매출 변동이 다른 손익 지표에 미치는 영향은 원가·판관비 가정이 필요합니다.':'앞서 조회한 매출액·영업이익·EBITDA가 없습니다. 먼저 “매출 얼마야?”처럼 기준 항목을 확인해 주세요.');
  if(/환율|단가|판매량|생산량|수율|원재료|원가|판관비|비용|가격|물량|투입|배부/.test(n))return fail('매출·영업이익·EBITDA 금액 자체의 증감 가정만 지원합니다. 원가나 가격·수량 변경에 따른 손익 영향은 시나리오 변수 조정으로 계산해야 합니다.');
  if(/전년|전월|전분기|예산대비|계획대비|비교|전년동기/.test(n))return fail('기간 비교와 가상 증감은 별개입니다. 비교 기준 대신 대상 CASE와 증감률을 지정해 주세요.');
  if(/%p|%\s*포인트|퍼센트\s*포인트/.test(query))return fail('금액 증감에는 %를 사용합니다. %p는 비율의 변화에 사용하는 단위입니다.');
