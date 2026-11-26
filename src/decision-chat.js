@@ -18,6 +18,7 @@ function decisionChatIntent(text){
  if(/(?:손익분기|bep|본전|흑자전환).*(?:얼마|몇|언제|넘|달성|분석|계산|더팔)/.test(n))return 'bep';
  if(/(?:가장큰영향|가장많은영향|영향큰변수|어떤변수|민감한변수|중요한변수|토네이도)/.test(n))return 'tornado';
  if(/(?:낙관|비관|bullcase|bearcase|베이스|basecase).*(?:비교|차이|대조)|(?:시나리오|case).*(?:비교|차이|대조)/.test(n))return 'scenario';
+ if((/(?:매출액?|매출금액).*(?:그대로|유지|고정|변함없|동일)|(?:그대로|유지|고정).*(?:매출액?|매출금액)/.test(n))&&/(?:영업이익|영익)/.test(n)&&/(?:늘|개선|증가|올리|높)/.test(n))return 'goal-constrained';
  if(/(?:왜|원인|기여|요인|이유).*(?:줄|증가|하락|감소|올랐|변동|늘)|(?:영업이익|이익|ebitda|매출).*(?:왜|원인|요인)/.test(n))return 'bridge';
  if(/(?:달성|맞추|찍으|넘기려|필요한|필요해|얼마나올|어떻게해야).*(?:위해|단가|얼마|몇|조정|늘|올려)|(?:영업이익률|영업이익|ebitda|매출액).*(?:\d+(?:\.\d+)?\s*(?:억|%|퍼센트|프로|백만)).*(?:달성|맞추|찍으)/.test(n))return 'goal';
  if(decisionChatValid()&&/(?:그럼|그러면|거기서|여기서|그수치|그금액)/.test(n)&&/영업이익|영익|에비따|ebitda|매출|원재료비/.test(n)&&(!pct||drivers))return 'scenario-followup';
@@ -126,6 +127,24 @@ function decisionChatAnswer(text){
   if(intent==='bep'){
    const r=buildBreakEven(c,scope,/에비따|ebitda/.test(n)?'ebitda':'op');
    assistantSay(financeAnswerHeader(c,scope)+(r.available?'<p><strong>손익분기점 매출액 '+fmt(r.root.totals.revenue/unit,2)+' '+unitLabel()+'</strong></p><p>BEP 판매량 '+fmt(r.root.totals.qty,2)+'kg · 현재 대비 규모 '+(r.root.factor>=1?'+':'')+fmt((r.root.factor-1)*100,2)+'% · 안전한계율 '+percent(r.marginSafety)+'</p>':'<p>'+esc(r.reason)+'</p>')+'<p class="hint">판매량과 생산량을 같은 비율로 변화시킨 모형 기반 BEP입니다. 전통적인 고정·변동 원가 공식의 확정값은 아닙니다.</p>');return true;
+  }
+  if(intent==='goal-constrained'){
+   const number=raw.match(/(\d+(?:\.\d+)?)\s*(억|백만원|원)/);
+   if(!number){assistantSay('<p>매출액 유지 조건과 함께 필요한 영업이익 개선 금액을 지정해 주세요. 예: “매출 유지하면서 영업이익 50억 원 늘리려면?”</p>');return true;}
+   const scale=number[2]==='억'?1e8:number[2]==='백만원'?1e6:1;
+   const adjustable={...scope,months:scope.months.filter(m=>m>forecastThrough(c))};
+   const initial=aggregate(planningRows(c,{...scope,months:chatAllMonths()}));
+   const target=initial.op+Number(number[1])*scale;
+   if(!adjustable.months.length){assistantSay('<p>마감 실적을 제외하면 변경 가능한 월이 없습니다. 잔여 조정 기간을 지정해 주세요.</p>');return true;}
+   const names=['판매단가','원재료 단가'];
+   const bounds={xMin:-50,xMax:100,yMin:-50,yMax:100};
+   const solved=buildConstrainedGoalSeek(c,adjustable,'op',target,'revenue',initial.revenue,'salesPrice','rawPrice',bounds,true);
+   const note='<p class="hint">두 조정 변수('+names.join('·')+')를 선택한 명시적 예시입니다. 다른 원가 절감이나 생산계획 변경 방법도 있을 수 있으며 전역 최적해를 의미하지 않습니다. 저장된 CASE는 변경하지 않았습니다. 경영 분석 → 목표 역산 → 복수 변수·제약 역산에서 변수와 허용 범위를 바꿀 수 있습니다.</p>';
+   if(!solved.available){assistantSay(financeAnswerHeader(c,adjustable)+'<p>매출액 '+fmt(initial.revenue/unit,2)+' '+unitLabel()+'를 유지하며 영업이익을 '+fmt(Number(number[1])*scale/unit,2)+' '+unitLabel()+' 개선하는 조건:</p><p>'+esc(solved.reason)+'</p>'+note);return true;}
+   assistantSay(financeAnswerHeader(c,adjustable)+'<p><strong>매출액 유지 · 영업이익 '+fmt(Number(number[1])*scale/unit,2)+' '+unitLabel()+' 개선 가정</strong></p>'+
+    safeTable(['조정 항목','필요 증감률'],[[names[0],(solved.rates[0]>0?'+':'')+fmt(solved.rates[0],3)+'%'],[names[1],(solved.rates[1]>0?'+':'')+fmt(solved.rates[1],3)+'%']])+
+    '<p>재계산 매출액 '+fmt(solved.achieved[1]/unit,2)+' '+unitLabel()+' · 영업이익 '+fmt(solved.achieved[0]/unit,2)+' '+unitLabel()+'</p>'+note);
+   return true;
   }
   if(intent==='goal'){
    const rate=raw.match(/(?<!\d)(\d+(?:\.\d+)?)\s*(억|백만원|원|%|퍼센트|프로)/),targetMetric=/에비따|ebitda/.test(n)?'ebitda':/영업이익률|영익률/.test(n)?'opMargin':/매출액|매출/.test(n)&&!/영업이익/.test(n)?'revenue':'op';
