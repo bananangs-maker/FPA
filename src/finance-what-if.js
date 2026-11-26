@@ -5,6 +5,7 @@ function financeWhatIfContextKey(plan){
  if(!plan||!plan.scope||plan.comparison)return null;
  if(plan.kind==='whatif')return plan.metric.key;
  if(plan.kind!=='metric')return null;
+ if(/비중|비율|마진|점유|대비|차지|퍼센트|구성비|%/.test(chatNorm(plan.subject)))return null;
  // Only a single, explicit currency metric can be reused: not a ratio or multi-metric report.
  const metrics=[...new Set(financeMetricMatches(plan.subject).map(t=>t.metric.key))];
  return metrics.length===1&&FINANCE_WHATIF_KEYS.has(metrics[0])?metrics[0]:null;
