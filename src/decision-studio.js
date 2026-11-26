@@ -4,10 +4,10 @@ let decisionAnomalyBasis='mom',decisionAnomalyReference='',decisionAnomalyChange
 function decisionScope(period='all'){return {site:siteFilter,product:productFilter,months:period==='all'?chatAllMonths():[Number(period)]};}
 function decisionSignature(...values){return JSON.stringify(values);}
 function decisionStudio(){
- const tabs=[['bridge','손익 증감'],['bep','손익분기점'],['anomaly','변동 감지']];
+ const tabs=[['bridge','손익 증감'],['bep','손익분기점'],['sensitivity','민감도'],['scenarios','CASE 비교'],['anomaly','변동 감지']];
  return '<div class="decision-studio"><div class="decision-intro"><strong>경영 분석 스튜디오</strong><p>현재 CASE의 실제 입력을 기반으로 분석합니다. 조회 및 가상 계산으로 원본 데이터는 변경하지 않습니다.</p></div>'+
  '<div class="decision-tabs" role="tablist" aria-label="경영 분석 기능">'+tabs.map(([key,label])=>'<button type="button" role="tab" aria-selected="'+(decisionTab===key)+'" class="'+(decisionTab===key?'active':'')+'" onclick="decisionTab=\''+key+'\';render()">'+label+'</button>').join('')+'</div>'+
- (decisionTab==='bridge'?decisionBridgeScreen():decisionTab==='bep'?decisionBepScreen():decisionAnomalyScreen())+'</div>';
+ (decisionTab==='bridge'?decisionBridgeScreen():decisionTab==='bep'?decisionBepScreen():decisionTab==='sensitivity'?decisionSensitivityScreen():decisionTab==='scenarios'?decisionComparisonScreen():decisionAnomalyScreen())+'</div>';
 }
 function decisionBridgeScreen(){
  const c=active(),references=state.cases.filter(r=>r.id!==c.id&&r.year===c.year);

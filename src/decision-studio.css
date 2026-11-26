@@ -54,3 +54,28 @@ details.decision-details summary{font-size:12px;font-weight:600;cursor:pointer}
 @media(max-width:850px){.waterfall-row{grid-template-columns:115px minmax(0,1fr) 95px;gap:7px}.decision-summary strong{font-size:15px}}
 @media(max-width:560px){.decision-controls{grid-template-columns:1fr}.decision-summary{grid-template-columns:1fr}.decision-summary>div+div{border-left:0;border-top:1px solid var(--line)}.waterfall-row{grid-template-columns:105px minmax(0,1fr);gap:6px}.waterfall-row strong{grid-column:2;text-align:left;margin-top:-4px;margin-bottom:7px}.decision-tabs{gap:12px}}
 @media print{.decision-commands,.decision-tabs{display:none}.decision-bep-chart svg{max-height:240px}.decision-studio .panel{break-inside:avoid}.decision-summary strong{font-size:15px}}
+
+/* Scenario matrix, one-dimensional sensitivity and tornado — reuse existing palette. */
+.decision-case-picker{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 16px}
+.decision-case-picker label{min-width:160px;max-width:270px;display:flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:12px;color:var(--ink);cursor:pointer}
+.decision-case-picker label:has(input:checked){border-color:var(--blue);background:var(--focus)}
+.decision-case-picker label small{color:var(--muted);font-size:10px}
+.decision-case-picker input{width:15px;height:15px;accent-color:var(--blue);flex-shrink:0}
+html[data-theme=dark] .decision-case-picker label:has(input:checked){background:var(--focus);border-color:var(--blue)}
+.decision-tornado{display:flex;flex-direction:column;gap:7px;margin:0 20px 18px}
+.decision-tornado-row{display:grid;grid-template-columns:140px minmax(0,1fr) 230px;gap:9px;align-items:center;min-height:31px}
+.decision-tornado-row>span{font-size:12px;color:var(--ink)}
+.decision-tornado-row>strong{font-size:11px;text-align:right;font-variant-numeric:tabular-nums;font-weight:550}
+.decision-tornado-bars{display:grid;grid-template-columns:1fr 1fr;gap:0;height:17px;border-bottom:1px solid var(--line)}
+.decision-tornado-bars>div{display:flex;align-items:center}
+.decision-tornado-bars>div:first-child{justify-content:flex-end;border-right:1px solid var(--muted)}
+.decision-tornado-bars i{display:block;height:10px;min-width:1px;border-radius:2px}
+.decision-tornado-bars i.down{background:var(--red)}
+.decision-tornado-bars i.up{background:var(--blue)}
+.decision-scenario-chart{padding:16px 20px 24px}
+.decision-scenario-chart svg{display:block;width:100%;max-height:270px}
+.decision-scenario-legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:10px;color:var(--muted)}
+.decision-scenario-legend span{display:flex;align-items:center;gap:6px}
+.decision-scenario-legend i{display:inline-block;height:3px;width:16px}
+@media(max-width:920px){.decision-tornado-row{grid-template-columns:110px minmax(0,1fr)}.decision-tornado-row>strong{grid-column:2;text-align:left}}
+@media(max-width:580px){.decision-case-picker label{max-width:none;width:100%}.decision-tornado-row{grid-template-columns:100px minmax(0,1fr)}.decision-scenario-chart{padding:10px}}
