@@ -24,4 +24,19 @@ test('knowledge covers CVP decisions, standard variances, revenue, leases and pr
 test('theme modes respect system preference with explicit user override',()=>{assert.equal(run("themeIsDark('system',true)"),true);assert.equal(run("themeIsDark('light',true)"),false);assert.equal(run("themeIsDark('dark',false)"),true)});
 test('theme toggle persists separately without changing financial state',()=>{const before=run('JSON.stringify(state)');run("applyTheme('dark',true)");assert.equal(attrs['data-theme'],'dark');assert.equal(stored['fpa-studio-v3-theme'],'dark');run('toggleTheme()');assert.equal(attrs['data-theme'],'light');assert.equal(run('JSON.stringify(state)'),before)});
 test('icons use one primary multisize ICO plus separate touch and pinned tab assets',()=>{const links=html.match(/<link\b[^>]*rel="icon"[^>]*>/g)||[];assert.equal(links.length,1);assert.match(links[0],/favicon-v181.ico/);assert.match(html,/rel="mask-icon"[^>]*safari-pinned-172.svg/);assert.match(html,/content="1.16.0"/);assert.ok(fs.existsSync(__dirname+'/fpa-touch-172.png'));assert.ok(fs.existsSync(__dirname+'/favicon.ico'))});
+test('dark theme shows financial trace values as unboxed text without disabling audit or number rolling',()=>{
+ const theme=fs.readFileSync(__dirname+'/src/theme.css','utf8');
+ const planning=fs.readFileSync(__dirname+'/src/planning.css','utf8');
+ const rolling=fs.readFileSync(__dirname+'/src/number-roll.js','utf8');
+ const normal=theme.match(/html\[data-theme=dark\] button\.trace-value\{([^}]*)\}/);
+ const hover=theme.match(/html\[data-theme=dark\] button\.trace-value:hover\{([^}]*)\}/);
+ assert.ok(normal&&hover,'dark theme requires unboxed normal and hover rules');
+ for(const declaration of ['background:transparent','border:0','box-shadow:none']){assert.ok(normal[1].includes(declaration),declaration);assert.ok(hover[1].includes(declaration),declaration);}
+ assert.match(normal[1],/color:inherit/);
+ assert.match(hover[1],/color:var\(--blue\)/);
+ assert.doesNotMatch(normal[1]+hover[1],/outline\s*:/);
+ assert.match(planning,/\.trace-value\{[^}]*cursor:pointer/);
+ assert.match(rolling,/target\.append\(overlay\)/);
+ assert.match(html,/html\[data-theme=dark\] button\.trace-value/);
+});
 console.log('Verified '+passed+' accounting, theme and icon checks.');
