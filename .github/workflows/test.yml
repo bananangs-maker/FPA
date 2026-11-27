@@ -1,7 +1,7 @@
 name: FPA validation
 on:
   push:
-    branches: [main, "feature/**"]
+    branches: [main, "feature/**", "quality/**"]
   pull_request:
     branches: [main]
 jobs:
