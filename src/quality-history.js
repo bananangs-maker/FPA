@@ -5,7 +5,7 @@ const QUALITY_RESTORE_SUFFIX='-before-replacement-v1';
 const QUALITY_INTERVAL_MS=20*60*1000;
 const QUALITY_HISTORY_MAX_ENTRIES=5;
 const QUALITY_HISTORY_BUDGET=1500000; // UTF-16 string units; conservative per-workspace localStorage budget.
-const qualityPersisted=new Map();
+const qualityPersisted=new Map(),qualitySnapshotTimers=new Map();
 function qualityHistoryKey(key=workspaceStorageKey()){return key+QUALITY_HISTORY_SUFFIX;}
 function qualityRestorationKey(key=workspaceStorageKey()){return key+QUALITY_RESTORE_SUFFIX;}
 function qualityInitPersistence(){
@@ -30,14 +30,18 @@ function qualityCheckConflict(){
 function qualityAfterSave(raw){
  const key=workspaceStorageKey();
  qualityPersisted.set(key,raw);
- try{
-  const h=qualityReadHistory(key);
-  if(!h.length||Date.now()-new Date(h[h.length-1].at).getTime()>=QUALITY_INTERVAL_MS){
-   // History failures must never invalidate a successful canonical save.
-   qualityCaptureSnapshot('자동 시점 저장','',raw,false);
-  }
- }catch{}
+ // Avoid parsing the complete snapshot journal on every cell edit.
+ let previous=qualitySnapshotTimers.get(key);
+ if(previous===undefined){
+  try{const h=qualityReadHistory(key);previous=h.length?Date.parse(h[h.length-1].at)||0:0;}catch{previous=0;}
+ }
+ if(Date.now()-previous<QUALITY_INTERVAL_MS){qualitySnapshotTimers.set(key,previous);return;}
+ qualitySnapshotTimers.set(key,Date.now());
+ try{qualityCaptureSnapshot('자동 시점 저장','',raw,false);}catch{
+  // A history quota problem must never revert the successfully saved workspace.
+ }
 }
+
 function qualityTimestamp(){return new Date().toISOString();}
 function qualityFinanceSummary(s){
  const c=s.cases.find(x=>x.id===s.active)||s.cases[0];
@@ -64,6 +68,7 @@ function qualityCaptureSnapshot(reason='수동 버전 저장',source='',raw=null
   while(next.length>1){next.shift();try{localStorage.setItem(qualityHistoryKey(key),JSON.stringify(next));if(notify)toast('용량을 확보하기 위해 오래된 이력 일부를 정리했습니다.');return true;}catch{}}
   throw Error('브라우저 저장 공간이 부족합니다. 전체 JSON 백업을 다운로드하세요.');
  }
+ qualitySnapshotTimers.set(key,Date.now());
  if(notify)toast('로컬 버전을 저장했습니다. · '+entry.reason);
  return true;
 }
