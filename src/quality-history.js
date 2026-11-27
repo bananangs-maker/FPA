@@ -6,6 +6,39 @@ const QUALITY_INTERVAL_MS=20*60*1000;
 const QUALITY_HISTORY_MAX_ENTRIES=5;
 const QUALITY_HISTORY_BUDGET=1500000; // UTF-16 string units; conservative per-workspace localStorage budget.
 const qualityPersisted=new Map(),qualitySnapshotTimers=new Map();
+// Compact, real-time edit journal: never contains raw uploaded documents, only changed fields.
+function qualityComposeAudit(previous,edits,caseId,origin='직접 입력'){
+ const current=Array.isArray(previous)?previous.slice(-200):[];
+ const time=qualityTimestamp();
+ for(const change of (Array.isArray(edits)?edits:[])){
+  if(qualityValueEqual(change.before,change.after))continue;
+  current.push({at:time,caseId:String(caseId||'').slice(0,90),origin:String(origin).slice(0,50),
+   row:String(change.row||'').slice(0,100),field:String(change.field||'').slice(0,100),
+   before:change.before===undefined?null:change.before,after:change.after===undefined?null:change.after});
+ }
+ return current.slice(-200);
+}
+function qualityRecordEdits(edits,origin='직접 입력'){
+ if(!edits?.length)return;
+ state.qualityAudit=qualityComposeAudit(state.qualityAudit,edits,active().id,origin);
+}
+function qualityProvenanceDialog(){
+ const c=active(),meta=c.inputProvenance||{};
+ modal('현재 CASE · 입력 출처 및 경영가정',
+ '<p class="hint">출처·가정은 현재 CASE의 JSON 백업에 함께 저장됩니다. 금액과 원가 계산 자체는 변경하지 않습니다.</p>'+
+ '<div class="quality-fields">'+field('source','데이터 출처 (예: 내부 계획·공개자료)',meta.source||'', 'text','maxlength="160"')+
+ field('asof','자료 기준일',meta.asof||'', 'date')+'</div>'+
+ '<label class="field">경영가정·확인 사항<textarea name="assumptions" rows="5" maxlength="800" placeholder="확인된 경영가정과 미확정 가정을 구분해 기록하세요.">'+esc(meta.assumptions||'')+'</textarea></label>',
+ data=>{
+  try{
+   if(caseIsLocked(c))throw Error('확정된 CASE의 출처는 직접 수정할 수 없습니다. 복제 후 기록하세요.');
+   c.inputProvenance={source:String(data.get('source')||'').trim().slice(0,160),asof:String(data.get('asof')||''),assumptions:String(data.get('assumptions')||'').trim().slice(0,800),updated:qualityTimestamp()};
+   if(!save())throw Error('변경된 출처 정보를 저장하지 못했습니다. 저장 상태를 확인하세요.');
+   closeModal();toast('입력 출처와 가정이 CASE 백업에 포함되어 저장됐습니다.');
+  }catch(e){toast(e.message);}
+ },'출처·가정 저장');
+}
+
 function qualityHistoryKey(key=workspaceStorageKey()){return key+QUALITY_HISTORY_SUFFIX;}
 function qualityRestorationKey(key=workspaceStorageKey()){return key+QUALITY_RESTORE_SUFFIX;}
 function qualityInitPersistence(){
@@ -136,11 +169,13 @@ function qualityHistoryDialog(){
  const items=qualityReadHistory().slice().reverse();
  const raw=(()=>{try{return localStorage.getItem(qualityRestorationKey())}catch{return null}})();
  const backupText=raw?'<p class="quality-note">전체 데이터 교체 전 복구본이 있습니다. <button type="button" onclick="qualityDownloadProtected()">복구본 JSON 저장</button></p>':'';
+ const recent=Array.isArray(state.qualityAudit)?state.qualityAudit.slice(-12).reverse():[];
+ const auditMarkup=recent.length?'<details class="quality-scroll"><summary>최근 입력 변경 '+state.qualityAudit.length+'건 · 마지막 12건</summary>'+safeTable(['시각','CASE','입력 항목','변경 전','변경 후'],recent.map(x=>[new Date(x.at).toLocaleString('ko-KR'),x.caseId+' / '+x.origin,x.row+' · '+x.field,qualityDisplayValue(x.before),qualityDisplayValue(x.after)]))+'</details>':'<p class="hint">기록된 개별 입력 변경은 없습니다.</p>';
  const rows=items.length?'<div class="quality-scroll"><table class="quality-table"><thead><tr><th>버전 시각</th><th>구분·출처</th><th>기준 CASE</th><th>관리</th></tr></thead><tbody>'+
   items.map(v=>'<tr><td>'+esc(new Date(v.at).toLocaleString('ko-KR'))+'</td><td>'+esc(v.reason)+(v.source?'<small> · '+esc(v.source)+'</small>':'')+'</td><td>'+esc(v.finance?.label||'자료 없음')+'</td><td><button type="button" onclick="qualityShowComparison('+JSON.stringify(v.id)+')">비교</button><button type="button" onclick="qualityRestorePrompt('+JSON.stringify(v.id)+')">복원</button><button type="button" onclick="qualityDownloadVersion('+JSON.stringify(v.id)+')">JSON</button></td></tr>').join('')+'</tbody></table></div>':'<p class="hint">저장된 버전이 없습니다. 아래 입력으로 첫 체크포인트를 만드세요.</p>';
  const body='<p class="hint">이력과 복구 사본은 이 브라우저의 현재 작업 공간에만 저장됩니다. 자동 시점 저장은 20분 간격이며, 모든 셀 변경을 개별 기록하는 감사 로그는 아닙니다. 장기 보관에는 JSON 파일 백업을 사용하세요.</p>'+
   '<div class="quality-fields">'+field('note','버전 설명 (선택)','', 'text','maxlength="80"')+field('source','수치·가정 출처 (선택)','', 'text','maxlength="160"')+'</div>'+
-  '<div class="quality-tools"><button type="button" onclick="qualityManualCheckpoint()">현재 상태 버전 저장</button><button type="button" onclick="downloadBackup()">전체 JSON 백업</button></div>'+backupText+rows;
+  '<div class="quality-tools"><button type="button" onclick="qualityManualCheckpoint()">현재 상태 버전 저장</button><button type="button" onclick="downloadBackup()">전체 JSON 백업</button><button type="button" onclick="qualityProvenanceDialog()">CASE 출처·가정</button></div>'+backupText+rows+auditMarkup;
  modal('데이터 버전 · 변경 이력',body,()=>closeModal(),'닫기',false);
 }
 function qualityManualCheckpoint(){
