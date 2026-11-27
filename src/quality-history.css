@@ -1,0 +1,16 @@
+/* Quiet, compact audit surface in the existing File menu modal. */
+.quality-note,.quality-fields,.quality-tools,.quality-scroll{margin:0 0 14px}
+.quality-note{font-size:12px;color:var(--muted)}
+.quality-note button,.quality-tools button,.quality-table button{font-size:11px}
+.quality-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.quality-fields .field{min-width:0}
+.quality-fields input{width:100%;min-width:0}
+.quality-tools{display:flex;gap:8px;flex-wrap:wrap}
+.quality-scroll{max-height:44vh;overflow:auto}
+.quality-table{width:100%;border-collapse:collapse;font-size:12px}
+.quality-table th,.quality-table td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;white-space:normal;color:var(--ink)}
+.quality-table th{color:var(--muted);font-size:11px}
+.quality-table td:last-child{min-width:152px}
+.quality-table td:last-child button{background:transparent;box-shadow:none;color:var(--blue);border:none;padding:4px 6px}
+.quality-table small{font-size:10px;color:var(--muted);display:block}
+@media(max-width:640px){.quality-fields{grid-template-columns:1fr}.quality-table td:last-child{min-width:105px}.quality-table button{padding:3px}}
