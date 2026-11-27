@@ -1,8 +1,8 @@
 {
   "name": "fpa",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "private": true,
-  "description": "FPA · 제조업 손익 시뮬레이터",
+  "description": "FPA Studio · 제조업 FP&A 의사결정 및 로컬 데이터 신뢰성",
   "scripts": {
     "start": "node server.cjs",
     "test": "node build.cjs && node verify.cjs && node verify-assistant.cjs && node verify-market.cjs && node verify-accounting-theme.cjs && node verify-planning-learning.cjs && node verify-favicon.cjs && node verify-inventory-restore.cjs && node verify-qa.cjs && node verify-demo.cjs && node verify-annual.cjs && node verify-economy.cjs && node verify-csv-data.cjs && node verify-number-roll.cjs && node verify-finance-queries.cjs && node verify-assistant-accuracy.cjs && node verify-operations.cjs && node verify-workbook.cjs",
