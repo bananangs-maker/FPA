@@ -47,7 +47,7 @@ function qualityFinanceSummary(s){
 }
 function qualityCaptureSnapshot(reason='수동 버전 저장',source='',raw=null,notify=true){
  const key=workspaceStorageKey();
- if(raw===null){if(saveBlocked)throw Error('자동 저장이 중단된 상태에서는 새 버전을 확정할 수 없습니다. 먼저 JSON 백업을 내보내세요.');qualityCheckConflict();raw=JSON.stringify(state);}
+ if(raw===null){if(saveBlocked)throw Error('자동 저장이 중단된 상태에서는 새 버전을 확정할 수 없습니다. 먼저 JSON 백업을 내보내세요.');qualityCheckConflict();raw=JSON.stringify(state);const persisted=localStorage.getItem(key);if(persisted&&persisted!==raw)throw Error('아직 정상 저장되지 않은 입력이 있습니다. 브라우저 저장 상태를 확인한 뒤 버전을 생성하세요.');}
  if(typeof raw!=='string'||!raw.length)throw Error('버전으로 저장할 입력 데이터가 없습니다.');
  if(raw.length>QUALITY_HISTORY_BUDGET)throw Error('입력 데이터가 브라우저 이력 용량 한도를 초과했습니다. 전체 JSON 백업을 파일로 저장해 주세요.');
  const data=JSON.parse(raw);
@@ -152,7 +152,7 @@ function qualityShowComparison(id){
   const summary=caseChanged?'<p class="hint">버전의 기준 CASE가 현재 작업 데이터에 존재하지 않아 손익 비교를 건너뜁니다.</p>':comparison.length?safeTable(['재무 지표','이전 (원)','현재 (원)','차이 (원)'],comparison.map(x=>[x.label,fmt(x.old,2),fmt(x.now,2),fmt(x.delta,2)])):'';
   const changes='<p>변경 필드 '+diff.count+'개'+(diff.count>diff.details.length?' · 처음 '+diff.details.length+'개 표시':'')+'</p>'+
   (diff.details.length?safeTable(['입력 위치','항목','변경 전','변경 후'],diff.details.map(x=>[x.label,x.field,qualityDisplayValue(x.before),qualityDisplayValue(x.after)])):'<p class="hint">입력값 차이가 없습니다.</p>');
-  modal('버전 비교 · '+new Date(entry.at).toLocaleString('ko-KR'),'<p class="hint">선택한 버전과 현재 입력을 비교합니다. 버전의 기준 CASE가 남아 있는 경우 해당 CASE의 손익을 재계산합니다.</p>'+summary+changes,()=>qualityHistoryDialog(),'이력으로 돌아가기',false);
+  modal('버전 비교 · '+new Date(entry.at).toLocaleString('ko-KR'),'<p class="hint">선택한 버전과 현재 입력을 비교합니다. 버전의 기준 CASE가 남아 있는 경우 해당 CASE의 손익을 재계산합니다.</p>'+summary+changes,()=>{closeModal();qualityHistoryDialog();},'이력으로 돌아가기',false);
  }catch(e){toast(e.message);}
 }
 function qualityRestorePrompt(id){
