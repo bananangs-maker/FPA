@@ -18,7 +18,7 @@ function upgradeDemoYears(){
     next.demoAnnualVersion=1;
     if(!validateState(next))return false;
     // One atomic write: older demo edits and the real workspace remain intact.
-    localStorage.setItem(DEMO_STORAGE_KEY,JSON.stringify(next));state=next;return true;
+    qualityCheckConflict();const serialized=JSON.stringify(next);localStorage.setItem(DEMO_STORAGE_KEY,serialized);state=next;qualityAfterSave(serialized);return true;
   }catch{return false;}
 }
 function paintWorkspaceMode(){
@@ -30,7 +30,7 @@ function toggleDemoWorkspace(){
   if(!demoTemplateText){toast('목업 데이터를 불러올 수 없습니다. 새로고침해 주세요.');return;}
   try{
     // A failed write must never be followed by a reload that could lose edits.
-    if(!saveBlocked)localStorage.setItem(workspaceStorageKey(),JSON.stringify(state));
+    if(!saveBlocked){qualityCheckConflict();const current=localStorage.getItem(workspaceStorageKey());if(current!==JSON.stringify(state)&&!save())throw Error('작업 데이터 저장이 차단되어 작업 공간을 전환하지 않았습니다.');}
     localStorage.setItem(WORKSPACE_MODE_KEY,demoMode?'work':'demo');
   }catch{toast('저장 공간을 확인해 주세요. JSON 백업 후 다시 전환하세요.');return;}
   location.reload();

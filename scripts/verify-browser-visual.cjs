@@ -56,6 +56,13 @@ async function health(){
   await report.screenshot({path:path.join(OUTPUT,'executive-mobile-dark.png')});
   const mobile=await report.evaluate(el=>({right:el.getBoundingClientRect().right,width:innerWidth}));
   assert.ok(mobile.right<=mobile.width+5,'Report container must fit mobile viewport');
+  await page.evaluate(()=>qualityHistoryDialog());
+  assert.ok(await page.getByText('데이터 버전 · 변경 이력',{exact:false}).count()>0,'Quality history must open from existing File tools');
+  await page.evaluate(()=>{closeModal();qualityProvenanceDialog();});
+  assert.ok(await page.locator('#dialog-form input[name="source"]').count()>0,'Source provenance field must be editable');
+  assert.ok(await page.locator('#dialog-form textarea[name="assumptions"]').count()>0,'Business assumptions must be captured');
+  await page.screenshot({path:path.join(OUTPUT,'quality-provenance-mobile-dark.png')});
+  await page.evaluate(()=>closeModal());
   await page.evaluate(()=>{decisionTab='goal';decisionGoalMode='multi';render();});
   assert.ok(await page.getByText('복수 변수 목표 역산',{exact:false}).count()>0,'Multi-driver Goal Seek must render');
   await page.evaluate(()=>{decisionTab='bep';decisionBepMode='cvp';render();});

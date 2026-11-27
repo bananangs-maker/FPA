@@ -18,6 +18,9 @@ const required=[
  ['두 변수 제약 역산','function buildConstrainedGoalSeek('],
  ['명시적 CVP','function buildExplicitCVP('],
  ['개별 표 내보내기','function decisionReportPartRows('],
+ ['버전 이력','function qualityReadHistory('],
+ ['복원 안전 장치','function qualitySafeBeforeReplacement('],
+ ['교차 탭 충돌 감지','function qualityCheckConflict('],
  ['코발트 UI','decision-studio'],
  ['원가 계산 유지','function calculate(']
 ];
